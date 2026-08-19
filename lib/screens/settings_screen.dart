@@ -4,6 +4,8 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import '../l10n/strings.dart';
 import '../widgets/nav_sheet.dart';
+import '../widgets/premium_reminder_picker.dart';
+import '../widgets/contextual_paywall.dart';
 import 'premium_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -45,13 +47,12 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _buildLabel(Strings.get(locale, 'section_daily'), ext),
           _buildCard(ext, [
-            _buildRow(ext, Icons.access_time, Strings.get(locale, 'reminder_time'), Strings.get(locale, 'reminder_time_sub'), value: timeStr, onTap: () async {
+            _buildRow(ext, Icons.access_time, Strings.get(locale, 'reminder_time'), Strings.get(locale, 'reminder_time_sub'), value: timeStr, onTap: () {
               if (!state.isPremium) {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumScreen()));
                 return;
               }
-              final newTime = await showTimePicker(context: context, initialTime: state.notificationTime);
-              if (newTime != null) state.setNotificationTime(newTime);
+              _showReminderTimeSheet(context, ext);
             }),
             _buildRow(ext, Icons.notifications_none, Strings.get(locale, 'notifications'), Strings.get(locale, 'notifications_sub'), isSwitch: true, switchValue: state.notificationsEnabled, onTap: () {
               state.toggleNotifications();
@@ -221,15 +222,25 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showThemeSheet(BuildContext context, AppState state, OneThemeExtension ext, String locale) {
-    if (!state.isPremium) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumScreen()));
-      return;
-    }
     _showSelectionSheet(context, ext, Strings.get(locale, 'theme'), [
       {'id': 'paper', 'title': Strings.get(locale, 'theme_paper'), 'sub': Strings.get(locale, 'theme_paper_sub')},
-      {'id': 'sepia', 'title': Strings.get(locale, 'theme_sepia'), 'sub': Strings.get(locale, 'theme_sepia_sub')},
-      {'id': 'dark', 'title': Strings.get(locale, 'theme_dark'), 'sub': Strings.get(locale, 'theme_dark_sub')},
-    ], state.themeName, (id) => state.setTheme(id));
+      {'id': 'sepia', 'title': Strings.get(locale, 'theme_sepia') + (!state.isPremium ? ' · ONE+' : ''), 'sub': Strings.get(locale, 'theme_sepia_sub')},
+      {'id': 'dark', 'title': Strings.get(locale, 'theme_dark') + (!state.isPremium ? ' · ONE+' : ''), 'sub': Strings.get(locale, 'theme_dark_sub')},
+    ], state.themeName, (id) {
+      if (id == 'paper' || state.isPremium) {
+        state.setTheme(id);
+      } else {
+        final themeName = id == 'sepia' ? Strings.get(locale, 'theme_sepia') : Strings.get(locale, 'theme_dark');
+        state.setPendingPremiumAction(() => state.setTheme(id));
+        ContextualPaywallSheet.show(
+          context,
+          title: '$themeName is part of ONE+',
+          description: 'Typography and backgrounds change the mood while the product stays quiet.',
+          unlockLabel: 'Unlock ONE+',
+          cancelLabel: 'Keep Paper',
+        );
+      }
+    });
   }
 
   void _showTextSizeSheet(BuildContext context, AppState state, OneThemeExtension ext, String locale) {
@@ -303,6 +314,43 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 );
               }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showReminderTimeSheet(BuildContext context, OneThemeExtension ext) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: ext.bg2,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).padding.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ext.line,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+              const SizedBox(height: 18),
+              PremiumReminderTimePicker(
+                isModal: true,
+                onSaved: () {
+                  Navigator.pop(context);
+                },
+              ),
             ],
           ),
         );

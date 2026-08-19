@@ -129,6 +129,24 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  VoidCallback? _pendingPremiumAction;
+
+  void setPendingPremiumAction(VoidCallback? action) {
+    _pendingPremiumAction = action;
+  }
+
+  void applyPendingPremiumAction() {
+    if (_pendingPremiumAction != null) {
+      final action = _pendingPremiumAction;
+      _pendingPremiumAction = null;
+      action?.call();
+    }
+  }
+
+  void clearPendingPremiumAction() {
+    _pendingPremiumAction = null;
+  }
+
   void _checkPremiumStatus(CustomerInfo customerInfo) {
     // Entitlement name must match what you set in RevenueCat dashboard (e.g., 'premium')
     const entitlementIdentifier = 'premium';
@@ -136,6 +154,9 @@ class AppState extends ChangeNotifier {
     
     if (_isPremium != isPro) {
       _isPremium = isPro;
+      if (_isPremium) {
+        applyPendingPremiumAction();
+      }
       notifyListeners();
     }
   }
@@ -144,6 +165,7 @@ class AppState extends ChangeNotifier {
     try {
       final purchaseResult = await Purchases.purchasePackage(package);
       _checkPremiumStatus(purchaseResult.customerInfo);
+      applyPendingPremiumAction();
       return true;
     } catch (e) {
       debugPrint("Purchase failed: $e");
@@ -155,6 +177,9 @@ class AppState extends ChangeNotifier {
     try {
       final customerInfo = await Purchases.restorePurchases();
       _checkPremiumStatus(customerInfo);
+      if (_isPremium) {
+        applyPendingPremiumAction();
+      }
       return _isPremium;
     } catch (e) {
       debugPrint("Restore failed: $e");

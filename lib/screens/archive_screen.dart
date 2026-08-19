@@ -7,6 +7,7 @@ import '../l10n/strings.dart';
 import '../theme.dart';
 import '../models/quote.dart';
 import '../widgets/nav_sheet.dart';
+import '../widgets/contextual_paywall.dart';
 
 class ArchiveScreen extends StatelessWidget {
   const ArchiveScreen({super.key});
@@ -50,8 +51,9 @@ class ArchiveScreen extends StatelessWidget {
                 final DateTime date = item['date'];
                 final Quote quote = item['quote'];
                 final isFav = state.isFavorite(quote);
+                final isLocked = !state.isPremium && index >= 7;
 
-                return Container(
+                final cardContent = Container(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
                   decoration: BoxDecoration(
                     border: Border(
@@ -62,14 +64,22 @@ class ArchiveScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        DateFormat.MMMMd(locale).format(date).toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          letterSpacing: 1.2,
-                          color: ext.muted,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            DateFormat.MMMMd(locale).format(date).toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              letterSpacing: 1.2,
+                              color: ext.muted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (isLocked) ...[
+                            const SizedBox(width: 6),
+                            const Text('🔒', style: TextStyle(fontSize: 10)),
+                          ],
+                        ],
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 13, bottom: 12),
@@ -89,23 +99,54 @@ class ArchiveScreen extends StatelessWidget {
                             quote.author,
                             style: TextStyle(fontSize: 12, color: ext.muted),
                           ),
-                          GestureDetector(
-                            onTap: () => state.toggleFavorite(quote),
-                            behavior: HitTestBehavior.opaque,
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Icon(
-                                isFav ? Icons.favorite : Icons.favorite_border,
-                                color: isFav ? ext.gold : ext.muted,
-                                size: 20,
+                          if (!isLocked)
+                            GestureDetector(
+                              onTap: () => state.toggleFavorite(quote),
+                              behavior: HitTestBehavior.opaque,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Icon(
+                                  isFav ? Icons.favorite : Icons.favorite_border,
+                                  color: isFav ? ext.gold : ext.muted,
+                                  size: 20,
+                                ),
+                              ),
+                            )
+                          else
+                            Text(
+                              'ONE+',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                                color: ext.gold,
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ],
                   ),
                 );
+
+                if (isLocked) {
+                  return GestureDetector(
+                    onTap: () {
+                      ContextualPaywallSheet.show(
+                        context,
+                        title: 'Keep your full history',
+                        description: 'ONE+ keeps every thought you’ve received since the day you started.',
+                        unlockLabel: 'Unlock ONE+',
+                        cancelLabel: 'Not now',
+                      );
+                    },
+                    child: Opacity(
+                      opacity: 0.52,
+                      child: cardContent,
+                    ),
+                  );
+                }
+
+                return cardContent;
               },
             ),
     );
