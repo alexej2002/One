@@ -11,7 +11,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
 
-  Future<void> init() async {
+  Future<void> init({VoidCallback? onNotificationTapped}) async {
     if (_isInitialized) return;
     
     tz.initializeTimeZones();
@@ -24,7 +24,20 @@ class NotificationService {
       android: initializationSettingsAndroid,
     );
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint("Notification tapped, navigating to Today screen");
+        onNotificationTapped?.call();
+      },
+    );
+
+    // Check if app was launched via notification tap on cold start
+    final launchDetails = await _notificationsPlugin.getNotificationAppLaunchDetails();
+    if (launchDetails != null && launchDetails.didNotificationLaunchApp) {
+      debugPrint("App launched from notification cold start, navigating to Today screen");
+      onNotificationTapped?.call();
+    }
     
     // Explicitly create notification channel with max priority and vibration
     final androidImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<

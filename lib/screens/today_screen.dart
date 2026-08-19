@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -55,9 +56,19 @@ class TodayScreen extends StatelessWidget {
     final quoteMarkColor = isDark ? Colors.white.withValues(alpha: 0.45) : const Color(0xFF4A4033).withValues(alpha: 0.35);
     final authorBgColor = isDark ? Colors.black.withValues(alpha: 0.25) : const Color(0xFF1A1815).withValues(alpha: 0.07);
 
-    return Scaffold(
-      backgroundColor: ext.bg,
-      body: Stack(
+    final overlayStyle = SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Scaffold(
+        backgroundColor: ext.bg,
+        body: Stack(
         children: [
           // Theme background image
           Positioned.fill(
@@ -266,8 +277,9 @@ class TodayScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildActionButton({
     required IconData icon,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -16,6 +17,7 @@ class SettingsScreen extends StatelessWidget {
     final state = context.watch<AppState>();
     final locale = state.locale;
     final ext = Theme.of(context).extension<OneThemeExtension>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final timeStr = MaterialLocalizations.of(context).formatTimeOfDay(state.notificationTime);
 
@@ -29,8 +31,19 @@ class SettingsScreen extends StatelessWidget {
       'pt': 'Português (PT)',
     };
 
-    return Scaffold(
-      appBar: AppBar(
+    final overlayStyle = SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: ext.bg2,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Scaffold(
+        backgroundColor: ext.bg2,
+        appBar: AppBar(
         title: Text(Strings.get(locale, 'settings')),
         centerTitle: true,
         leading: const SizedBox(width: 40),
@@ -125,8 +138,9 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 80),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   String _getThemeTitle(String locale, String theme) {
     if (theme == 'sepia') return Strings.get(locale, 'theme_sepia');

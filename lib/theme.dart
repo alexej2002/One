@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class OneThemeExtension extends ThemeExtension<OneThemeExtension> {
@@ -147,6 +148,13 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: ink),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: brightness == Brightness.dark ? Brightness.dark : Brightness.light,
+          systemNavigationBarColor: bg2,
+          systemNavigationBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        ),
         titleTextStyle: GoogleFonts.inter(
           color: ink, 
           fontSize: 18, 

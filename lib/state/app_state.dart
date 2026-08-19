@@ -10,6 +10,7 @@ import '../services/notification_service.dart';
 import '../models/quote.dart';
 import '../l10n/strings.dart';
 import 'package:intl/intl.dart';
+import '../main.dart';
 
 // TODO: Replace with your actual RevenueCat API keys
 const String appleApiKey = 'appl_YOUR_API_KEY_HERE';
@@ -89,7 +90,13 @@ class AppState extends ChangeNotifier {
       _favorites = favListString.map((str) => Quote.fromJson(jsonDecode(str))).toList();
     }
     
-    await _notificationService.init();
+    await _notificationService.init(
+      onNotificationTapped: () {
+        _currentTabIndex = 0; // Switch to TodayScreen
+        rootNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+        notifyListeners();
+      },
+    );
     
     // Initialize RevenueCat
     await _initRevenueCat();
