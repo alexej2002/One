@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../state/app_state.dart';
 import '../l10n/strings.dart';
 
@@ -165,17 +166,38 @@ class _PremiumScreenState extends State<PremiumScreen> {
 
                             // Continue Button
                             ElevatedButton(
-                              onPressed: () {
-                                // TODO: Implement RevenueCat purchase
-                                Navigator.pop(context);
+                              onPressed: () async {
+                                final state = context.read<AppState>();
+                                final offerings = state.offerings;
+                                if (offerings != null && offerings.current != null) {
+                                  Package? packageToBuy;
+                                  if (selectedPlan == 'monthly') {
+                                    packageToBuy = offerings.current!.monthly;
+                                  } else if (selectedPlan == 'yearly') {
+                                    packageToBuy = offerings.current!.annual;
+                                  } else if (selectedPlan == 'lifetime') {
+                                    packageToBuy = offerings.current!.lifetime;
+                                  }
+                                  
+                                  if (packageToBuy != null) {
+                                    final success = await state.purchasePackage(packageToBuy);
+                                    if (success && mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  }
+                                }
                               },
                               child: Text(Strings.get(locale, 'continue_btn')),
                             ),
 
                             // Restore
                             TextButton(
-                              onPressed: () {
-                                // TODO: Implement Restore Purchases
+                              onPressed: () async {
+                                final state = context.read<AppState>();
+                                final success = await state.restorePurchases();
+                                if (success && mounted) {
+                                  Navigator.pop(context);
+                                }
                               },
                               child: Text(
                                 Strings.get(locale, 'restore'),
