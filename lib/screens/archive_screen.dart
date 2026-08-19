@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../state/app_state.dart';
 import '../l10n/strings.dart';
 import '../theme.dart';
+import '../models/quote.dart';
 import '../widgets/nav_sheet.dart';
 
-class FavoritesScreen extends StatelessWidget {
-  const FavoritesScreen({super.key});
+class ArchiveScreen extends StatelessWidget {
+  const ArchiveScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final favorites = state.favorites;
-    final locale = state.locale;
     final ext = Theme.of(context).extension<OneThemeExtension>()!;
+    final locale = state.locale;
+    final archive = state.getArchiveQuotes();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(Strings.get(locale, 'favorites')),
+        title: Text(Strings.get(locale, 'archive')),
         centerTitle: true,
         leading: const SizedBox(width: 40),
         actions: [
@@ -29,12 +31,12 @@ class FavoritesScreen extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: favorites.isEmpty
+      body: archive.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
-                  Strings.get(locale, 'favorites_empty'),
+                  Strings.get(locale, 'archive_empty'),
                   style: TextStyle(color: ext.muted, height: 1.7),
                   textAlign: TextAlign.center,
                 ),
@@ -42,11 +44,13 @@ class FavoritesScreen extends StatelessWidget {
             )
           : ListView.builder(
               padding: const EdgeInsets.only(bottom: 24),
-              itemCount: favorites.length,
+              itemCount: archive.length,
               itemBuilder: (context, index) {
-                // Reverse the list so newest are on top
-                final quote = favorites[favorites.length - 1 - index];
-                
+                final item = archive[index];
+                final DateTime date = item['date'];
+                final Quote quote = item['quote'];
+                final isFav = state.isFavorite(quote);
+
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
                   decoration: BoxDecoration(
@@ -58,8 +62,17 @@ class FavoritesScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        DateFormat.MMMMd(locale).format(date).toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          letterSpacing: 1.2,
+                          color: ext.muted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.only(top: 13, bottom: 12),
                         child: Text(
                           '“${quote.text}”',
                           style: GoogleFonts.lora(
@@ -82,8 +95,8 @@ class FavoritesScreen extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Icon(
-                                Icons.favorite,
-                                color: ext.gold,
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                color: isFav ? ext.gold : ext.muted,
                                 size: 20,
                               ),
                             ),

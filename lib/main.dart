@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/today_screen.dart';
+import 'screens/main_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,13 +22,11 @@ class OneApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = context.watch<AppState>().themeMode;
+    final state = context.watch<AppState>();
     
     return MaterialApp(
       title: 'One',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      theme: AppTheme.getTheme(state.themeName),
       debugShowCheckedModeBanner: false,
       home: const InitializerWidget(),
     );
@@ -54,7 +52,7 @@ class InitializerWidget extends StatelessWidget {
           return const OnboardingScreen();
         }
 
-        return const TodayScreen();
+        return const MainScreen();
       },
     );
   }

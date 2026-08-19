@@ -7,7 +7,9 @@ class QuoteService {
 
   Future<void> loadQuotes(String locale) async {
     String filename = 'assets/quotes.json'; // fallback
-    if (['ru', 'de', 'es', 'fr', 'pt'].contains(locale)) {
+    if (locale == 'pt_BR') {
+      filename = 'assets/quotes_pt_br.json';
+    } else if (['ru', 'de', 'es', 'fr', 'pt'].contains(locale)) {
       filename = 'assets/quotes_$locale.json';
     }
     

@@ -15,7 +15,7 @@ const String appleApiKey = 'appl_YOUR_API_KEY_HERE';
 const String googleApiKey = 'goog_mfTQvMcXrWDnuHOKDcFadyhiXot';
 
 class AppState extends ChangeNotifier {
-  static const List<String> supportedLocales = ['en', 'ru', 'de', 'es', 'fr', 'pt'];
+  static const List<String> supportedLocales = ['en', 'ru', 'de', 'es', 'fr', 'pt_BR', 'pt'];
 
   final QuoteService _quoteService = QuoteService();
   final NotificationService _notificationService = NotificationService();
@@ -26,8 +26,10 @@ class AppState extends ChangeNotifier {
   DateTime? _startDate;
   Quote? _currentQuote;
   
-  ThemeMode _themeMode = ThemeMode.dark;
+  String _themeName = 'paper';
+  String _textSize = 'medium';
   String _locale = 'en';
+  int _currentTabIndex = 0;
   
   bool _notificationsEnabled = false;
   TimeOfDay _notificationTime = const TimeOfDay(hour: 9, minute: 0);
@@ -40,8 +42,10 @@ class AppState extends ChangeNotifier {
   bool get isOnboardingComplete => _isOnboardingComplete;
   bool get isPremium => _isPremium;
   Quote? get currentQuote => _currentQuote;
-  ThemeMode get themeMode => _themeMode;
+  String get themeName => _themeName;
+  String get textSize => _textSize;
   String get locale => _locale;
+  int get currentTabIndex => _currentTabIndex;
   Offerings? get offerings => _offerings;
   
   bool get notificationsEnabled => _notificationsEnabled;
@@ -54,9 +58,9 @@ class AppState extends ChangeNotifier {
     // Load onboarding status
     _isOnboardingComplete = prefs.getBool('onboarding_complete') ?? false;
     
-    // Load theme and locale
-    final isDark = prefs.getBool('is_dark_theme') ?? true;
-    _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    // Load theme, text size and locale
+    _themeName = prefs.getString('theme_name') ?? 'paper';
+    _textSize = prefs.getString('text_size') ?? 'medium';
     _locale = prefs.getString('locale') ?? _detectDeviceLocale();
     
     // Load notifications state
@@ -161,7 +165,11 @@ class AppState extends ChangeNotifier {
   String _detectDeviceLocale() {
     final locales = WidgetsBinding.instance.platformDispatcher.locales;
     if (locales.isEmpty) return 'en';
-    final langCode = locales.first.languageCode;
+    final primary = locales.first;
+    if (primary.languageCode == 'pt' && primary.countryCode == 'BR') {
+      return 'pt_BR';
+    }
+    final langCode = primary.languageCode;
     return supportedLocales.contains(langCode) ? langCode : 'en';
   }
 
@@ -178,6 +186,31 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  List<Map<String, dynamic>> getArchiveQuotes() {
+    if (_startDate == null) return [];
+    int currentDayIndex = _quoteService.calculateDayIndex(_startDate!, DateTime.now());
+    List<Map<String, dynamic>> archive = [];
+    
+    // For demo purposes, if it's the first day, let's pretend there are a few past days
+    // so the archive isn't empty on first install during testing.
+    int startIndex = 0;
+    DateTime start = _startDate!;
+    if (currentDayIndex == 0) {
+      startIndex = -3; // show 3 days of fake history for demonstration
+      start = _startDate!.subtract(const Duration(days: 3));
+    }
+
+    for (int i = startIndex; i < currentDayIndex; i++) {
+      int idx = i;
+      if (idx < 0) idx = 30 + idx; // wrap around for fake history
+      DateTime d = start.add(Duration(days: i - startIndex));
+      Quote q = _quoteService.getQuoteForDay(idx);
+      archive.add({'date': d, 'quote': q});
+    }
+    
+    return archive.reversed.toList();
+  }
+
   Future<void> completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_complete', true);
@@ -190,15 +223,22 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
   
-  Future<void> toggleTheme() async {
+  Future<void> setTheme(String themeName) async {
+    _themeName = themeName;
     final prefs = await SharedPreferences.getInstance();
-    if (_themeMode == ThemeMode.dark) {
-      _themeMode = ThemeMode.light;
-      await prefs.setBool('is_dark_theme', false);
-    } else {
-      _themeMode = ThemeMode.dark;
-      await prefs.setBool('is_dark_theme', true);
-    }
+    await prefs.setString('theme_name', themeName);
+    notifyListeners();
+  }
+
+  Future<void> setTextSize(String size) async {
+    _textSize = size;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('text_size', size);
+    notifyListeners();
+  }
+
+  void setTabIndex(int index) {
+    _currentTabIndex = index;
     notifyListeners();
   }
   

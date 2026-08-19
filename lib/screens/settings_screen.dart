@@ -1,203 +1,168 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/app_state.dart';
+import '../theme.dart';
 import '../l10n/strings.dart';
+import '../widgets/nav_sheet.dart';
 import 'premium_screen.dart';
-import 'favorites_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  String _formatTime(TimeOfDay time, BuildContext context) {
-    return time.format(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final isPremium = state.isPremium;
     final locale = state.locale;
-    final theme = state.themeMode == ThemeMode.dark
-        ? Strings.get(locale, 'theme_dark')
-        : Strings.get(locale, 'theme_light');
-    final langMap = {
+    final ext = Theme.of(context).extension<OneThemeExtension>()!;
+
+    final timeStr = MaterialLocalizations.of(context).formatTimeOfDay(state.notificationTime);
+
+    final langDisplay = {
       'en': 'English',
       'ru': 'Русский',
       'de': 'Deutsch',
       'es': 'Español',
       'fr': 'Français',
-      'pt': 'Português',
+      'pt_BR': 'Português (BR)',
+      'pt': 'Português (PT)',
     };
-    final lang = langMap[locale] ?? 'English';
-    final timeStr = _formatTime(state.notificationTime, context);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Topbar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              child: Row(
+      appBar: AppBar(
+        title: Text(Strings.get(locale, 'settings')),
+        centerTitle: true,
+        leading: const SizedBox(width: 40),
+        actions: [
+          IconButton(
+            icon: const Text('•••', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            onPressed: () => showNavigationSheet(context),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        children: [
+          _buildLabel(Strings.get(locale, 'section_daily'), ext),
+          _buildCard(ext, [
+            _buildRow(ext, Icons.access_time, Strings.get(locale, 'reminder_time'), Strings.get(locale, 'reminder_time_sub'), value: timeStr, onTap: () async {
+              if (!state.isPremium) {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumScreen()));
+                return;
+              }
+              final newTime = await showTimePicker(context: context, initialTime: state.notificationTime);
+              if (newTime != null) state.setNotificationTime(newTime);
+            }),
+            _buildRow(ext, Icons.notifications_none, Strings.get(locale, 'notifications'), Strings.get(locale, 'notifications_sub'), isSwitch: true, switchValue: state.notificationsEnabled, onTap: () {
+              state.toggleNotifications();
+            }),
+          ]),
+          
+          const SizedBox(height: 26),
+          _buildLabel(Strings.get(locale, 'section_appearance'), ext),
+          _buildCard(ext, [
+            _buildRow(ext, Icons.palette_outlined, Strings.get(locale, 'theme'), Strings.get(locale, 'theme_sub'), value: _getThemeTitle(locale, state.themeName), onTap: () {
+              _showThemeSheet(context, state, ext, locale);
+            }),
+            _buildRow(ext, Icons.text_fields, Strings.get(locale, 'text_size'), Strings.get(locale, 'text_size_sub'), value: _getTextSizeTitle(locale, state.textSize), onTap: () {
+              _showTextSizeSheet(context, state, ext, locale);
+            }),
+            _buildRow(ext, Icons.language, Strings.get(locale, 'language'), Strings.get(locale, 'language_sub'), value: langDisplay[state.locale] ?? state.locale.toUpperCase(), onTap: () {
+              _showLanguageSheet(context, state, ext, locale);
+            }),
+          ]),
+
+          const SizedBox(height: 26),
+          _buildLabel(Strings.get(locale, 'section_premium'), ext),
+          GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumScreen())),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 26),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [ext.gold2, ext.card],
+                ),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF372B1B).withValues(alpha: 0.06), blurRadius: 26, offset: const Offset(0, 12))
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    onPressed: () => Navigator.pop(context),
+                  Row(
+                    children: [
+                      Text('✦', style: TextStyle(fontSize: 22, color: ext.ink)),
+                      const SizedBox(width: 6),
+                      Text('ONE+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: ext.ink)),
+                    ],
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        Strings.get(locale, 'settings'),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48), // Balance for centering
+                  const SizedBox(height: 6),
+                  Text(Strings.get(locale, 'one_plus_sub'), style: TextStyle(fontSize: 12, color: ext.muted, height: 1.45)),
                 ],
               ),
             ),
+          ),
 
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                children: [
-                  _buildSectionLabel(Strings.get(locale, 'daily_quote') ?? 'Daily Quote', context),
-                  _buildSettingsCard(
-                    context,
-                    children: [
-                      _buildSettingRow(
-                        Icons.favorite_border,
-                        Strings.get(locale, 'saved_quotes') ?? 'Saved Quotes',
-                        context: context,
-                        locale: locale,
-                      ),
-                      _buildSettingRow(
-                        Icons.notifications_none,
-                        Strings.get(locale, 'notifications'),
-                        isSwitch: true,
-                        switchValue: state.notificationsEnabled,
-                        context: context,
-                        locale: locale,
-                      ),
-                      _buildSettingRow(
-                        Icons.access_time,
-                        Strings.get(locale, 'reminder_time') ?? 'Reminder Time',
-                        trailing: timeStr,
-                        context: context,
-                        locale: locale,
-                      ),
-                      _buildSettingRow(Icons.palette_outlined, Strings.get(locale, 'theme'), trailing: theme, context: context, locale: locale),
-                      _buildSettingRow(Icons.language, Strings.get(locale, 'language'), trailing: lang, context: context, locale: locale),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
-                  _buildSectionLabel(Strings.get(locale, 'one_premium') ?? 'ONE Premium', context),
-                  if (!isPremium)
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const PremiumScreen()),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Theme.of(context).primaryColor.withValues(alpha: 0.2),
-                              Theme.of(context).primaryColor.withValues(alpha: 0.05),
-                            ],
-                          ),
-                          border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor, size: 28),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    Strings.get(locale, 'not_premium'),
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    Strings.get(locale, 'unlock_features'),
-                                    style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyMedium?.color),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.check_circle, color: Colors.green),
-                          const SizedBox(width: 16),
-                          Text(Strings.get(locale, 'premium_active') ?? 'Premium Active', style: const TextStyle(fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    ),
-
-                  const SizedBox(height: 32),
-                  _buildSectionLabel(Strings.get(locale, 'about') ?? 'About', context),
-                  _buildSettingsCard(
-                    context,
-                    children: [
-                      _buildSettingRow(Icons.privacy_tip_outlined, Strings.get(locale, 'privacy_policy'), context: context, locale: locale),
-                      _buildSettingRow(Icons.description_outlined, Strings.get(locale, 'terms'), context: context, locale: locale),
-                      _buildSettingRow(Icons.mail_outline, Strings.get(locale, 'contact') ?? 'Contact us', context: context, locale: locale),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          const SizedBox(height: 8),
+          _buildLabel(Strings.get(locale, 'section_about'), ext),
+          _buildCard(ext, [
+            _buildRow(ext, Icons.info_outline, Strings.get(locale, 'about_one'), Strings.get(locale, 'about_one_sub'), onTap: () {
+              // about info
+            }),
+            _buildRow(ext, Icons.share_outlined, Strings.get(locale, 'share_one'), null, isLink: true, onTap: () {
+              // share app
+            }),
+            _buildRow(ext, Icons.mail_outline, Strings.get(locale, 'send_feedback'), null, isLink: true, onTap: () {
+              // mail feedback
+            }),
+          ]),
+          
+          const SizedBox(height: 80),
+        ],
       ),
     );
   }
 
-  Widget _buildSectionLabel(String label, BuildContext context) {
+  String _getThemeTitle(String locale, String theme) {
+    if (theme == 'sepia') return Strings.get(locale, 'theme_sepia');
+    if (theme == 'dark') return Strings.get(locale, 'theme_dark');
+    return Strings.get(locale, 'theme_paper');
+  }
+
+  String _getTextSizeTitle(String locale, String size) {
+    if (size == 'small') return Strings.get(locale, 'size_small');
+    if (size == 'large') return Strings.get(locale, 'size_large');
+    return Strings.get(locale, 'size_medium');
+  }
+
+  Widget _buildLabel(String text, OneThemeExtension ext) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, bottom: 10),
+      padding: const EdgeInsets.only(left: 10, bottom: 9),
       child: Text(
-        label,
+        text,
         style: TextStyle(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-          fontSize: 11,
-          letterSpacing: 1.2,
-          fontWeight: FontWeight.w600,
+          fontSize: 10,
+          letterSpacing: 1.6,
+          fontWeight: FontWeight.w700,
+          color: ext.muted.withValues(alpha: 0.88),
         ),
       ),
     );
   }
 
-  Widget _buildSettingsCard(BuildContext context, {required List<Widget> children}) {
+  Widget _buildCard(OneThemeExtension ext, List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.03) ?? Colors.black12,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        color: ext.card.withValues(alpha: 0.88),
+        border: Border.all(color: const Color(0xFF352F28).withValues(alpha: 0.09)),
+        borderRadius: BorderRadius.circular(17),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFF30271D).withValues(alpha: 0.035), blurRadius: 22, offset: const Offset(0, 8))
+        ],
       ),
       child: Column(
         children: children,
@@ -205,104 +170,143 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingRow(
-    IconData icon,
-    String title, {
-    String? trailing,
-    bool isSwitch = false,
-    bool switchValue = false,
-    required BuildContext context,
-    String locale = 'en',
-  }) {
+  Widget _buildRow(OneThemeExtension ext, IconData icon, String title, String? sub, {String? value, bool isSwitch = false, bool switchValue = false, bool isLink = false, VoidCallback? onTap}) {
     return InkWell(
-      onTap: () async {
-        final state = context.read<AppState>();
-        
-        if (title == (Strings.get(locale, 'saved_quotes') ?? 'Saved Quotes')) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
-          return;
-        } else if (isSwitch && title == Strings.get(locale, 'notifications')) {
-          await state.toggleNotifications();
-        } else if (title == (Strings.get(locale, 'reminder_time') ?? 'Reminder Time')) {
-          if (!state.isPremium) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const PremiumScreen()));
-            return;
-          }
-          final newTime = await showTimePicker(
-            context: context,
-            initialTime: state.notificationTime,
-          );
-          if (newTime != null) {
-            state.setNotificationTime(newTime);
-          }
-        } else if (title == Strings.get(locale, 'theme')) {
-          if (!state.isPremium) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const PremiumScreen()));
-          } else {
-            state.toggleTheme();
-          }
-        } else if (title == Strings.get(locale, 'language')) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return SimpleDialog(
-                title: const Text('Select Language'),
-                children: <Widget>[
-                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'en'); }, child: const Text('English')),
-                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'ru'); }, child: const Text('Русский')),
-                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'de'); }, child: const Text('Deutsch')),
-                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'es'); }, child: const Text('Español')),
-                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'fr'); }, child: const Text('Français')),
-                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'pt'); }, child: const Text('Português')),
-                ],
-              );
-            }
-          ).then((selectedLocale) {
-            if (selectedLocale != null) {
-              state.setLocale(selectedLocale);
-            }
-          });
-        }
-      },
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        constraints: const BoxConstraints(minHeight: 64),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor, width: 0.5)),
+          border: Border(bottom: BorderSide(color: ext.line, width: 0.5)),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.8)),
-            const SizedBox(width: 16),
+            Icon(icon, size: 18, color: ext.ink),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: ext.ink)),
+                  if (sub != null) ...[
+                    const SizedBox(height: 3),
+                    Text(sub, style: TextStyle(fontSize: 10, color: ext.muted, height: 1.45)),
+                  ],
+                ],
               ),
             ),
-            if (trailing != null) ...[
-              Text(
-                trailing,
-                style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.chevron_right, size: 18, color: Theme.of(context).textTheme.bodyMedium?.color),
-            ] else if (isSwitch) ...[
+            if (value != null)
+              Row(
+                children: [
+                  Text(value, style: TextStyle(fontSize: 11.5, color: ext.muted)),
+                  const SizedBox(width: 8),
+                  Icon(Icons.chevron_right, size: 16, color: ext.muted),
+                ],
+              )
+            else if (isSwitch)
               Switch(
                 value: switchValue,
-                onChanged: (val) {
-                  final state = context.read<AppState>();
-                  if (title == Strings.get(locale, 'notifications')) {
-                    state.toggleNotifications();
-                  }
-                },
-                activeColor: Theme.of(context).primaryColor,
-              ),
-            ] else ...[
-              Icon(Icons.chevron_right, size: 18, color: Theme.of(context).textTheme.bodyMedium?.color),
-            ],
+                onChanged: (_) => onTap?.call(),
+                activeThumbColor: ext.gold,
+              )
+            else if (isLink)
+              Icon(Icons.north_east, size: 16, color: ext.muted)
+            else
+              Icon(Icons.chevron_right, size: 16, color: ext.muted),
           ],
         ),
       ),
+    );
+  }
+
+  void _showThemeSheet(BuildContext context, AppState state, OneThemeExtension ext, String locale) {
+    if (!state.isPremium) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const PremiumScreen()));
+      return;
+    }
+    _showSelectionSheet(context, ext, Strings.get(locale, 'theme'), [
+      {'id': 'paper', 'title': Strings.get(locale, 'theme_paper'), 'sub': Strings.get(locale, 'theme_paper_sub')},
+      {'id': 'sepia', 'title': Strings.get(locale, 'theme_sepia'), 'sub': Strings.get(locale, 'theme_sepia_sub')},
+      {'id': 'dark', 'title': Strings.get(locale, 'theme_dark'), 'sub': Strings.get(locale, 'theme_dark_sub')},
+    ], state.themeName, (id) => state.setTheme(id));
+  }
+
+  void _showTextSizeSheet(BuildContext context, AppState state, OneThemeExtension ext, String locale) {
+    _showSelectionSheet(context, ext, Strings.get(locale, 'text_size'), [
+      {'id': 'small', 'title': Strings.get(locale, 'size_small'), 'sub': Strings.get(locale, 'size_small_sub')},
+      {'id': 'medium', 'title': Strings.get(locale, 'size_medium'), 'sub': Strings.get(locale, 'size_medium_sub')},
+      {'id': 'large', 'title': Strings.get(locale, 'size_large'), 'sub': Strings.get(locale, 'size_large_sub')},
+    ], state.textSize, (id) => state.setTextSize(id));
+  }
+
+  void _showLanguageSheet(BuildContext context, AppState state, OneThemeExtension ext, String locale) {
+    _showSelectionSheet(context, ext, Strings.get(locale, 'language'), [
+      {'id': 'en', 'title': 'English', 'sub': 'English'},
+      {'id': 'ru', 'title': 'Русский', 'sub': 'Russian'},
+      {'id': 'de', 'title': 'Deutsch', 'sub': 'German'},
+      {'id': 'es', 'title': 'Español', 'sub': 'Spanish'},
+      {'id': 'fr', 'title': 'Français', 'sub': 'French'},
+      {'id': 'pt_BR', 'title': 'Português (Brasil)', 'sub': 'Brazilian Portuguese'},
+      {'id': 'pt', 'title': 'Português (Portugal)', 'sub': 'European Portuguese'},
+    ], state.locale, (id) => state.setLocale(id));
+  }
+
+  void _showSelectionSheet(BuildContext context, OneThemeExtension ext, String title, List<Map<String, String>> options, String currentValue, Function(String) onSelect) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(color: ext.bg2, borderRadius: const BorderRadius.vertical(top: Radius.circular(28))),
+          padding: EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 24 + MediaQuery.of(context).padding.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: ext.line, borderRadius: BorderRadius.circular(99)), margin: const EdgeInsets.only(bottom: 18))),
+              Text(title, style: const TextStyle(fontSize: 24, fontFamily: 'Georgia')),
+              const SizedBox(height: 16),
+              ...options.map((opt) {
+                final isActive = currentValue == opt['id'];
+                return GestureDetector(
+                  onTap: () {
+                    onSelect(opt['id']!);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    margin: const EdgeInsets.symmetric(vertical: 7),
+                    decoration: BoxDecoration(
+                      color: ext.card,
+                      border: Border.all(color: isActive ? ext.gold : ext.line),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(opt['title']!, style: TextStyle(fontWeight: FontWeight.bold, color: ext.ink)),
+                            if (opt['sub']!.isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(opt['sub']!, style: TextStyle(fontSize: 12, color: ext.muted)),
+                            ],
+                          ],
+                        ),
+                        if (isActive) Icon(Icons.check, color: ext.ink, size: 18),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 }

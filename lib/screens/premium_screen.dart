@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../state/app_state.dart';
 import '../l10n/strings.dart';
+import '../theme.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
@@ -17,358 +17,206 @@ class _PremiumScreenState extends State<PremiumScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locale = context.watch<AppState>().locale;
+    final state = context.watch<AppState>();
+    final locale = state.locale;
+    final ext = Theme.of(context).extension<OneThemeExtension>()!;
+    
+    // Fallback prices
+    String monthlyPrice = '\$2.99';
+    String yearlyPrice = '\$14.99';
+    String lifetimePrice = '\$24.99';
+    
+    if (state.offerings != null && state.offerings!.current != null) {
+      if (state.offerings!.current!.monthly != null) {
+        monthlyPrice = state.offerings!.current!.monthly!.storeProduct.priceString;
+      }
+      if (state.offerings!.current!.annual != null) {
+        yearlyPrice = state.offerings!.current!.annual!.storeProduct.priceString;
+      }
+      if (state.offerings!.current!.lifetime != null) {
+        lifetimePrice = state.offerings!.current!.lifetime!.storeProduct.priceString;
+      }
+    }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Topbar
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
-                vertical: 16.0,
+      appBar: AppBar(
+        title: const Text('ONE+'),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(18.0),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, bottom: 26.0),
+            child: Column(
+              children: [
+                Text('✦', style: TextStyle(fontSize: 45, color: ext.gold)),
+                const SizedBox(height: 14),
+                Text(
+                  Strings.get(locale, 'premium_heading'),
+                  style: const TextStyle(fontFamily: 'Georgia', fontSize: 31, letterSpacing: 0.12),
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  Strings.get(locale, 'premium_desc'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: ext.muted, height: 1.7),
+                ),
+              ],
+            ),
+          ),
+          
+          Container(
+            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.only(bottom: 26),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: RadialGradient(
+                center: const Alignment(0.76, -0.8),
+                radius: 1.2,
+                colors: [ext.gold.withValues(alpha: 0.1), Colors.transparent],
+                stops: const [0.0, 0.24],
               ),
-              child: Row(
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [ext.gold2, ext.card],
+                ),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF372B1B).withValues(alpha: 0.06), blurRadius: 26, offset: const Offset(0, 12))
+                ],
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  Text(Strings.get(locale, 'premium_exp'), style: TextStyle(fontSize: 11, letterSpacing: 1.5, color: ext.muted)),
+                  const SizedBox(height: 10),
+                  Text(Strings.get(locale, 'premium_banner_title'), style: TextStyle(fontFamily: 'Georgia', fontSize: 28, height: 1.2, color: ext.ink)),
+                  const SizedBox(height: 10),
+                  Text(Strings.get(locale, 'premium_banner_desc'), style: TextStyle(fontSize: 12, color: ext.muted, height: 1.45)),
                 ],
               ),
             ),
+          ),
 
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(28.0, 0, 28.0, 16.0),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: SizedBox(
-                        width: constraints.maxWidth - 56,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Icon
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.auto_awesome,
-                                color: Colors.white,
-                                size: 26,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
+          _buildFeaturesCard(ext, locale),
 
-                            // Title
-                            Text(
-                              Strings.get(locale, 'premium_title'),
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.lora(
-                                fontSize: 32,
-                                height: 1.1,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+          const SizedBox(height: 26),
+          Row(
+            children: [
+              Expanded(child: _buildPlan('monthly', Strings.get(locale, 'monthly'), monthlyPrice, Strings.get(locale, 'per_month'), ext)),
+              const SizedBox(width: 10),
+              Expanded(child: _buildPlan('yearly', Strings.get(locale, 'yearly'), yearlyPrice, Strings.get(locale, 'per_year'), ext)),
+              const SizedBox(width: 10),
+              Expanded(child: _buildPlan('lifetime', Strings.get(locale, 'lifetime'), lifetimePrice, Strings.get(locale, 'one_time'), ext)),
+            ],
+          ),
 
-                            // Subtitle
-                            Text(
-                              Strings.get(locale, 'premium_subtitle'),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium?.color,
-                                height: 1.6,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
+          const SizedBox(height: 18),
+          ElevatedButton(
+            onPressed: () async {
+              final offerings = state.offerings;
+              if (offerings != null && offerings.current != null) {
+                Package? packageToBuy;
+                if (selectedPlan == 'monthly') packageToBuy = offerings.current!.monthly;
+                else if (selectedPlan == 'yearly') packageToBuy = offerings.current!.annual;
+                else if (selectedPlan == 'lifetime') packageToBuy = offerings.current!.lifetime;
+                
+                if (packageToBuy != null) {
+                  final success = await state.purchasePackage(packageToBuy);
+                  if (success && mounted) Navigator.pop(context);
+                }
+              } else {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('RevenueCat is not configured or no packages available.')));
+              }
+            },
+            child: Text(Strings.get(locale, 'continue_btn')),
+          ),
 
-                            // Features
-                            Divider(color: Theme.of(context).dividerColor),
-                            _buildFeature(
-                              Icons.access_time,
-                              Strings.get(locale, 'feature_1_title'),
-                              Strings.get(locale, 'feature_1_desc'),
-                              context,
-                            ),
-                            _buildFeature(
-                              Icons.palette_outlined,
-                              Strings.get(locale, 'feature_2_title'),
-                              Strings.get(locale, 'feature_2_desc'),
-                              context,
-                            ),
-                            _buildFeature(
-                              Icons.inventory_2_outlined,
-                              Strings.get(locale, 'feature_3_title'),
-                              Strings.get(locale, 'feature_3_desc'),
-                              context,
-                            ),
-                            _buildFeature(
-                              Icons.widgets_outlined,
-                              Strings.get(locale, 'feature_4_title'),
-                              Strings.get(locale, 'feature_4_desc'),
-                              context,
-                            ),
-
-                            const SizedBox(height: 18),
-
-                            // Plans
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildPlan(
-                                    'monthly',
-                                    Strings.get(locale, 'monthly'),
-                                    '\$2.99',
-                                    Strings.get(locale, 'per_month'),
-                                    context,
-                                    locale,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _buildPlan(
-                                    'yearly',
-                                    Strings.get(locale, 'yearly'),
-                                    '\$14.99',
-                                    Strings.get(locale, 'per_year'),
-                                    context,
-                                    locale,
-                                    isBestValue: true,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _buildPlan(
-                                    'lifetime',
-                                    Strings.get(locale, 'lifetime'),
-                                    '\$24.99',
-                                    Strings.get(locale, 'one_time'),
-                                    context,
-                                    locale,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Continue Button
-                            ElevatedButton(
-                              onPressed: () async {
-                                final state = context.read<AppState>();
-                                final offerings = state.offerings;
-                                
-                                if (offerings != null && offerings.current != null) {
-                                  Package? packageToBuy;
-                                  if (selectedPlan == 'monthly') {
-                                    packageToBuy = offerings.current!.monthly;
-                                  } else if (selectedPlan == 'yearly') {
-                                    packageToBuy = offerings.current!.annual;
-                                  } else if (selectedPlan == 'lifetime') {
-                                    packageToBuy = offerings.current!.lifetime;
-                                  }
-                                  
-                                  if (packageToBuy != null) {
-                                    final success = await state.purchasePackage(packageToBuy);
-                                    if (success && mounted) {
-                                      Navigator.pop(context);
-                                    }
-                                  }
-                                } else {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('RevenueCat is not configured or no packages available.')),
-                                    );
-                                  }
-                                }
-                              },
-                              child: Text(Strings.get(locale, 'continue_btn')),
-                            ),
-
-                            // Restore
-                            TextButton(
-                              onPressed: () async {
-                                final state = context.read<AppState>();
-                                final success = await state.restorePurchases();
-                                if (success && mounted) {
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: Text(
-                                Strings.get(locale, 'restore'),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyMedium?.color,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          TextButton(
+            onPressed: () async {
+              final success = await state.restorePurchases();
+              if (success && mounted) Navigator.pop(context);
+            },
+            child: Text(Strings.get(locale, 'restore'), style: TextStyle(fontSize: 12, color: ext.muted)),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildFeature(
-    IconData icon,
-    String title,
-    String subtitle,
-    BuildContext context,
-  ) {
+  Widget _buildFeaturesCard(OneThemeExtension ext, String locale) {
+    return Column(
+      children: [
+        _buildFeatureRow('◷', Strings.get(locale, 'premium_feat_1_title'), Strings.get(locale, 'premium_feat_1_sub'), ext),
+        _buildFeatureRow('◉', Strings.get(locale, 'premium_feat_2_title'), Strings.get(locale, 'premium_feat_2_sub'), ext),
+        _buildFeatureRow('▣', Strings.get(locale, 'premium_feat_3_title'), Strings.get(locale, 'premium_feat_3_sub'), ext),
+        _buildFeatureRow('⌗', Strings.get(locale, 'premium_feat_4_title'), Strings.get(locale, 'premium_feat_4_sub'), ext),
+      ],
+    );
+  }
+
+  Widget _buildFeatureRow(String icon, String title, String sub, OneThemeExtension ext) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).dividerColor),
-        ),
+        color: ext.card.withValues(alpha: 0.9),
+        border: Border.all(color: const Color(0xFF352F28).withValues(alpha: 0.08)),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFF2C241B).withValues(alpha: 0.035), blurRadius: 20, offset: const Offset(0, 8))
+        ],
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-            size: 22,
-          ),
+          Text(icon, style: TextStyle(fontSize: 22, color: ext.ink)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: ext.ink)),
+                const SizedBox(height: 3),
+                Text(sub, style: TextStyle(fontSize: 12, color: ext.muted, height: 1.45)),
               ],
             ),
           ),
+          Icon(Icons.check, size: 18, color: ext.ink),
         ],
       ),
     );
   }
 
-  Widget _buildPlan(
-    String id,
-    String label,
-    String price,
-    String note,
-    BuildContext context,
-    String locale, {
-    bool isBestValue = false,
-  }) {
+  Widget _buildPlan(String id, String label, String price, String note, OneThemeExtension ext) {
     final isActive = selectedPlan == id;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedPlan = id;
-        });
-      },
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-                  : Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.color?.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isActive
-                    ? Theme.of(context).primaryColor
-                    : Theme.of(context).dividerColor,
-                width: 1,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label.toUpperCase(),
-                  style: const TextStyle(fontSize: 10, letterSpacing: 0.6),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  note,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                ),
-                if (isBestValue)
-                  const SizedBox(height: 10), // spacing for badge
-              ],
-            ),
-          ),
-          if (isBestValue)
-            Positioned(
-              bottom: -10,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    Strings.get(locale, 'best_value'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+      onTap: () => setState(() => selectedPlan = id),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isActive ? ext.card : ext.card.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: isActive ? ext.gold : const Color(0xFF352F28).withValues(alpha: 0.09)),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFF2C241B).withValues(alpha: 0.03), blurRadius: 18, offset: const Offset(0, 8))
+          ],
+          gradient: isActive ? LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [ext.gold2.withValues(alpha: 0.52), ext.card]) : null,
+        ),
+        child: Column(
+          children: [
+            Text(label, style: TextStyle(fontSize: 14, color: ext.ink)),
+            const SizedBox(height: 8),
+            Text(price, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: ext.ink)),
+            const SizedBox(height: 4),
+            Text(note, style: TextStyle(fontSize: 10, color: ext.muted)),
+          ],
+        ),
       ),
     );
   }
