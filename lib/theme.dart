@@ -79,6 +79,17 @@ class AppTheme {
           line: const Color(0x1F4c3e2f),
           gold2: const Color(0xFFe0ca9d),
         );
+      case 'aurora':
+        return _buildTheme(
+          brightness: Brightness.dark,
+          bg: const Color(0xFF4A5D6B),
+          bg2: const Color(0xFF556C7D),
+          card: const Color(0xFF3F515E),
+          ink: const Color(0xFFF9F9F9),
+          muted: const Color(0xFFC3D2DC),
+          line: const Color(0x2EFFFFFF),
+          gold2: const Color(0xFFD4B98C),
+        );
       case 'dark':
         return _buildTheme(
           brightness: Brightness.dark,

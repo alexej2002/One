@@ -164,7 +164,7 @@ class ThemesFeatureScreen extends StatelessWidget {
               colors: [Color(0xFF7793A8), Color(0xFFD4B98C), Color(0xFF37443D)],
             ),
             textColor: Colors.white,
-            isActive: false,
+            isActive: state.themeName == 'aurora',
             isPremiumLocked: !state.isPremium,
             onTap: () => selectTheme('aurora', 'Aurora'),
           ),

@@ -131,6 +131,7 @@ class SettingsScreen extends StatelessWidget {
   String _getThemeTitle(String locale, String theme) {
     if (theme == 'sepia') return Strings.get(locale, 'theme_sepia');
     if (theme == 'dark') return Strings.get(locale, 'theme_dark');
+    if (theme == 'aurora') return Strings.get(locale, 'theme_aurora');
     return Strings.get(locale, 'theme_paper');
   }
 
@@ -226,11 +227,16 @@ class SettingsScreen extends StatelessWidget {
       {'id': 'paper', 'title': Strings.get(locale, 'theme_paper'), 'sub': Strings.get(locale, 'theme_paper_sub')},
       {'id': 'sepia', 'title': Strings.get(locale, 'theme_sepia') + (!state.isPremium ? ' · ONE+' : ''), 'sub': Strings.get(locale, 'theme_sepia_sub')},
       {'id': 'dark', 'title': Strings.get(locale, 'theme_dark') + (!state.isPremium ? ' · ONE+' : ''), 'sub': Strings.get(locale, 'theme_dark_sub')},
+      {'id': 'aurora', 'title': Strings.get(locale, 'theme_aurora') + (!state.isPremium ? ' · ONE+' : ''), 'sub': Strings.get(locale, 'theme_aurora_sub')},
     ], state.themeName, (id) {
       if (id == 'paper' || state.isPremium) {
         state.setTheme(id);
       } else {
-        final themeName = id == 'sepia' ? Strings.get(locale, 'theme_sepia') : Strings.get(locale, 'theme_dark');
+        final themeName = id == 'sepia'
+            ? Strings.get(locale, 'theme_sepia')
+            : id == 'dark'
+                ? Strings.get(locale, 'theme_dark')
+                : Strings.get(locale, 'theme_aurora');
         state.setPendingPremiumAction(() => state.setTheme(id));
         ContextualPaywallSheet.show(
           context,
