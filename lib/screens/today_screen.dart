@@ -18,6 +18,8 @@ class TodayScreen extends StatelessWidget {
     final state = context.watch<AppState>();
     final quote = state.currentQuote;
     final locale = state.locale;
+    final ext = Theme.of(context).extension<OneThemeExtension>()!;
+    final isFav = quote != null && state.isFavorite(quote);
     
     final today = DateTime.now();
     final dateString = DateFormat.MMMMd(locale).format(today).toUpperCase();
@@ -192,22 +194,39 @@ class TodayScreen extends StatelessWidget {
                   ),
                 ),
                 
-                // Bottom Actions
+                // Bottom Actions: Favorite, Share, More (evenly spaced, with column layout like earlier version)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 25.0, right: 34.0),
+                  padding: const EdgeInsets.only(bottom: 32.0, left: 28.0, right: 28.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildActionBtn('↗', Strings.get(locale, 'share'), () {
-                        if (quote != null) {
-                          final textToShare = '“${quote.text}”\n\n— ${quote.author}\n\nVia ONE app';
-                          Share.share(textToShare);
-                        }
-                      }),
-                      const SizedBox(width: 20),
-                      _buildActionBtn('•••', Strings.get(locale, 'more'), () {
-                        _showMoreSheet(context, state, quote, locale);
-                      }),
+                      _buildActionButton(
+                        icon: isFav ? Icons.favorite : Icons.favorite_border,
+                        label: Strings.get(locale, 'save'),
+                        onTap: () {
+                          if (quote != null) {
+                            state.toggleFavorite(quote);
+                          }
+                        },
+                        iconColor: isFav ? ext.gold : Colors.white,
+                      ),
+                      _buildActionButton(
+                        icon: Icons.ios_share,
+                        label: Strings.get(locale, 'share'),
+                        onTap: () {
+                          if (quote != null) {
+                            final textToShare = '“${quote.text}”\n\n— ${quote.author}\n\nVia ONE app';
+                            Share.share(textToShare);
+                          }
+                        },
+                      ),
+                      _buildActionButton(
+                        icon: Icons.more_horiz,
+                        label: Strings.get(locale, 'more'),
+                        onTap: () {
+                          _showMoreSheet(context, state, quote, locale);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -219,11 +238,17 @@ class TodayScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionBtn(String iconTxt, String label, VoidCallback onTap) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? iconColor,
+  }) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 58,
@@ -240,19 +265,20 @@ class TodayScreen extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Center(
-                  child: Text(
-                    iconTxt,
-                    style: const TextStyle(fontSize: 23, color: Colors.white),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: iconColor ?? Colors.white,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 7),
+          const SizedBox(height: 8),
           Text(
             label,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
