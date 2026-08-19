@@ -1,7 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter/material.dart';
 
 class NotificationService {
@@ -16,22 +15,7 @@ class NotificationService {
     if (_isInitialized) return;
     
     tz.initializeTimeZones();
-    try {
-      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
-      debugPrint("Local timezone set to: $timeZoneName");
-    } catch (e) {
-      debugPrint("Failed to get local timezone via flutter_timezone: $e");
-      // Fallback matching by offset
-      final offset = DateTime.now().timeZoneOffset;
-      for (final loc in tz.timeZoneDatabase.locations.values) {
-        if (loc.currentTimeZone.offset == offset.inMilliseconds) {
-          tz.setLocalLocation(loc);
-          debugPrint("Fallback local timezone set to offset: ${offset.inHours}h");
-          break;
-        }
-      }
-    }
+    _configureLocalTimezone();
     
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -42,7 +26,7 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(initializationSettings);
     
-    // Explicitly create notification channel with high importance
+    // Explicitly create notification channel with max priority and vibration
     final androidImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (androidImplementation != null) {
@@ -61,6 +45,30 @@ class NotificationService {
     _isInitialized = true;
   }
 
+  void _configureLocalTimezone() {
+    final offset = DateTime.now().timeZoneOffset;
+    tz.Location? matched;
+    for (final loc in tz.timeZoneDatabase.locations.values) {
+      if (loc.currentTimeZone.offset == offset.inMilliseconds) {
+        matched = loc;
+        break;
+      }
+    }
+    if (matched != null) {
+      tz.setLocalLocation(matched);
+      debugPrint("Local timezone configured to: ${matched.name} (offset: ${offset.inHours}h)");
+    } else {
+      final customLocation = tz.Location(
+        'LocalDeviceOffset',
+        [tz.minTime],
+        [0],
+        [tz.TimeZone(offset.inMilliseconds, isDst: false, abbreviation: 'LOC')],
+      );
+      tz.setLocalLocation(customLocation);
+      debugPrint("Local timezone configured with custom offset: ${offset.inHours}h");
+    }
+  }
+
   Future<bool> requestPermissions() async {
     final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
         _notificationsPlugin.resolvePlatformSpecificImplementation<
@@ -68,7 +76,6 @@ class NotificationService {
 
     if (androidImplementation != null) {
       final granted = await androidImplementation.requestNotificationsPermission();
-      // On Android 12+ request exact alarms permission
       try {
         await androidImplementation.requestExactAlarmsPermission();
       } catch (_) {}
@@ -80,13 +87,24 @@ class NotificationService {
   Future<void> scheduleDailyReminder(TimeOfDay time, String title, String body) async {
     await cancelAll();
 
+    // Ensure local timezone is accurately aligned with current device offset
+    _configureLocalTimezone();
+
     final now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, time.hour, time.minute);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    debugPrint("Scheduled daily reminder for: $scheduledDate (tz.local now: $now)");
+    debugPrint("Scheduled daily reminder at: $scheduledDate (current tz.local: $now)");
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
