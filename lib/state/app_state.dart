@@ -339,15 +339,14 @@ class AppState extends ChangeNotifier {
     if (_notificationsEnabled) {
       final now = DateTime.now();
       final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
-      final title = 'ONE · $dateStr';
       final body = _currentQuote != null
           ? '“${_currentQuote!.text}”\n— ${_currentQuote!.author}'
           : Strings.get(_locale, 'notification_body');
 
       await _notificationService.scheduleDailyReminder(
-        _notificationTime,
-        title,
-        body,
+        time: _notificationTime,
+        body: body,
+        subText: dateStr,
       );
     }
   }

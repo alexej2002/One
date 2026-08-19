@@ -39,18 +39,19 @@ class NotificationService {
       onNotificationTapped?.call();
     }
     
-    // Explicitly create notification channel with max priority and vibration
+    // Explicitly create notification channel with max priority, quiet mode (no vibration) and public lock screen visibility
     final androidImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (androidImplementation != null) {
       await androidImplementation.createNotificationChannel(
         const AndroidNotificationChannel(
-          'daily_reminder_channel_v3',
+          'daily_reminder_channel_v5',
           'Daily Ritual Reminder',
           description: 'Daily thought reminder notification',
           importance: Importance.max,
           playSound: true,
-          enableVibration: true,
+          enableVibration: false,
+          showBadge: true,
         ),
       );
     }
@@ -97,7 +98,12 @@ class NotificationService {
     return false;
   }
 
-  Future<void> scheduleDailyReminder(TimeOfDay time, String title, String body) async {
+  Future<void> scheduleDailyReminder({
+    required TimeOfDay time,
+    required String body,
+    String? subText,
+    String? title,
+  }) async {
     await cancelAll();
 
     // Ensure local timezone is accurately aligned with current device offset
@@ -117,24 +123,27 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    debugPrint("Scheduled daily reminder at: $scheduledDate (current tz.local: $now)");
+    debugPrint("Scheduled daily reminder at: $scheduledDate (subText: $subText, current tz.local: $now)");
 
     final BigTextStyleInformation bigTextStyleInformation =
         BigTextStyleInformation(
       body,
       contentTitle: title,
-      summaryText: 'ONE',
+      summaryText: subText,
     );
 
     final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'daily_reminder_channel_v3',
+      'daily_reminder_channel_v5',
       'Daily Ritual Reminder',
       channelDescription: 'Daily thought reminder notification',
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
+      visibility: NotificationVisibility.public,
+      category: AndroidNotificationCategory.reminder,
       playSound: true,
-      enableVibration: true,
+      enableVibration: false,
+      subText: subText,
       styleInformation: bigTextStyleInformation,
     );
     final NotificationDetails platformChannelSpecifics =
