@@ -6,8 +6,6 @@ import '../l10n/strings.dart';
 import '../theme.dart';
 
 void showNavigationSheet(BuildContext context) {
-  final ext = Theme.of(context).extension<OneThemeExtension>()!;
-
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -15,6 +13,7 @@ void showNavigationSheet(BuildContext context) {
     builder: (ctx) {
       return Consumer<AppState>(
         builder: (context, appState, _) {
+          final ext = Theme.of(context).extension<OneThemeExtension>()!;
           final loc = appState.locale;
           return Container(
             decoration: BoxDecoration(

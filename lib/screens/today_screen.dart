@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../state/app_state.dart';
-import '../models/quote.dart';
 import '../theme.dart';
 import '../l10n/strings.dart';
 import '../widgets/nav_sheet.dart';
@@ -30,40 +29,12 @@ class TodayScreen extends StatelessWidget {
     if (state.textSize == 'large') baseSize = 40;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFb7c2cb),
+      backgroundColor: ext.bg,
       body: Stack(
         children: [
-          // Background simulation
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x738096a6), // rgba(128,150,166,.45)
-                    Color(0x2Eeedfc4), // rgba(238,223,196,.18)
-                    Color(0xD1151919), // rgba(21,25,25,.82)
-                  ],
-                  stops: [0.0, 0.48, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(0.44, 0.24), // 72% 62%
-                  radius: 0.5,
-                  colors: [
-                    Color(0x8Fffc067), // rgba(255,192,103,.56)
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Dynamic themed background
+          ..._buildThemedBackground(state.themeName),
+
           SafeArea(
             child: Column(
               children: [
@@ -130,9 +101,11 @@ class TodayScreen extends StatelessWidget {
                       children: [
                         Text(
                           dateString,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF625b53),
+                            color: state.themeName == 'sepia'
+                                ? const Color(0xFF776A59)
+                                : const Color(0xFF625B53).withValues(alpha: 0.9),
                             letterSpacing: 1.6,
                             fontWeight: FontWeight.w600,
                           ),
@@ -141,7 +114,9 @@ class TodayScreen extends StatelessWidget {
                         Container(
                           width: 28,
                           height: 1,
-                          color: const Color(0xFF1b1916).withValues(alpha: 0.46),
+                          color: state.themeName == 'dark' || state.themeName == 'aurora'
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : const Color(0xFF1B1916).withValues(alpha: 0.46),
                         ),
                         const SizedBox(height: 34),
                         Text(
@@ -149,7 +124,9 @@ class TodayScreen extends StatelessWidget {
                           style: GoogleFonts.lora(
                             fontSize: 44,
                             height: 0.7,
-                            color: const Color(0xFF2c2823).withValues(alpha: 0.42),
+                            color: state.themeName == 'dark' || state.themeName == 'aurora'
+                                ? Colors.white.withValues(alpha: 0.6)
+                                : const Color(0xFF2C2823).withValues(alpha: 0.42),
                           ),
                         ),
                         const SizedBox(height: 22),
@@ -162,27 +139,35 @@ class TodayScreen extends StatelessWidget {
                               height: 1.2,
                               fontWeight: FontWeight.w400,
                               letterSpacing: -0.5,
-                              color: Colors.white,
+                              color: state.themeName == 'sepia'
+                                  ? const Color(0xFF2B251E)
+                                  : Colors.white,
                             ),
                           ),
                           const SizedBox(height: 28),
                           Container(
                             width: 28,
                             height: 1,
-                            color: const Color(0xFF1b1916).withValues(alpha: 0.42),
+                            color: state.themeName == 'dark' || state.themeName == 'aurora'
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : const Color(0xFF1B1916).withValues(alpha: 0.42),
                           ),
                           const SizedBox(height: 18),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: state.themeName == 'sepia'
+                                  ? const Color(0xFF5A432F).withValues(alpha: 0.08)
+                                  : Colors.black.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(99),
                             ),
                             child: Text(
                               quote.author,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white,
+                                color: state.themeName == 'sepia'
+                                    ? const Color(0xFF4A3B2C)
+                                    : Colors.white,
                               ),
                             ),
                           ),
@@ -231,6 +216,147 @@ class TodayScreen extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildThemedBackground(String themeName) {
+    if (themeName == 'dark') {
+      return [
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF262622),
+                  Color(0xFF1B1B18),
+                  Color(0xFF12120F),
+                ],
+                stops: [0.0, 0.5, 1.0],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.44, 0.24),
+                radius: 0.6,
+                colors: [
+                  Color(0x28EADCC1),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    if (themeName == 'sepia') {
+      return [
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFF5EAD9),
+                  Color(0xFFE8D5B7),
+                  Color(0xFFDCC4A0),
+                ],
+                stops: [0.0, 0.5, 1.0],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.44, 0.24),
+                radius: 0.5,
+                colors: [
+                  Color(0x55FFCA7B),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    if (themeName == 'aurora') {
+      return [
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF4B6373),
+                  Color(0xFF7D6B4E),
+                  Color(0xFF2B3830),
+                ],
+                stops: [0.0, 0.55, 1.0],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.44, 0.24),
+                radius: 0.55,
+                colors: [
+                  Color(0x66D4B98C),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // Default Paper theme
+    return [
+      Positioned.fill(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0x738096a6),
+                Color(0x2Eeedfc4),
+                Color(0xD1151919),
+              ],
+              stops: [0.0, 0.48, 1.0],
+            ),
+          ),
+        ),
+      ),
+      Positioned.fill(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0.44, 0.24),
+              radius: 0.5,
+              colors: [
+                Color(0x8Fffc067),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
   Widget _buildActionButton({
     required IconData icon,
     required String label,
@@ -248,10 +374,17 @@ class TodayScreen extends StatelessWidget {
             height: 58,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0x1A000000), // #0001
+              color: const Color(0x14141414), // rgba(20,20,20,.08)
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.36),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(29),
@@ -260,20 +393,20 @@ class TodayScreen extends StatelessWidget {
                 child: Center(
                   child: Icon(
                     icon,
-                    size: 24,
                     color: iconColor ?? Colors.white,
+                    size: 24,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 7),
           Text(
             label,
             style: const TextStyle(
-              fontSize: 12,
               color: Colors.white,
-              fontWeight: FontWeight.w600,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
