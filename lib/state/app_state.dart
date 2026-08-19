@@ -308,18 +308,29 @@ class AppState extends ChangeNotifier {
     await prefs.setInt('notification_hour', time.hour);
     await prefs.setInt('notification_minute', time.minute);
     
+    // Auto-enable notifications when user explicitly sets a reminder time
+    if (!_notificationsEnabled) {
+      final granted = await _notificationService.requestPermissions();
+      if (granted) {
+        _notificationsEnabled = true;
+        await prefs.setBool('notifications_enabled', true);
+      }
+    }
+    
     if (_notificationsEnabled) {
-      _rescheduleNotificationIfEnabled();
+      await _rescheduleNotificationIfEnabled();
     }
     notifyListeners();
   }
   
   Future<void> _rescheduleNotificationIfEnabled() async {
     if (_notificationsEnabled) {
+      final title = Strings.get(_locale, 'notification_title');
+      final body = Strings.get(_locale, 'notification_body');
       await _notificationService.scheduleDailyReminder(
         _notificationTime,
-        Strings.get(_locale, 'notification_title') ?? 'ONE',
-        Strings.get(_locale, 'notification_body') ?? 'Your daily quote is ready.',
+        title,
+        body,
       );
     }
   }

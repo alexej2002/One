@@ -96,6 +96,8 @@ class Strings {
       'your_choice': 'Your choice:',
       'unlock_one_plus': 'Unlock ONE+',
       'not_now': 'Not now',
+      'notification_title': 'ONE',
+      'notification_body': 'Your daily thought is ready.',
     },
     'ru': {
       'onboarding_title': 'Одна мысль.\nКаждый день.',
@@ -193,6 +195,8 @@ class Strings {
       'your_choice': 'Ваш выбор:',
       'unlock_one_plus': 'Открыть ONE+',
       'not_now': 'Не сейчас',
+      'notification_title': 'ONE',
+      'notification_body': 'Ваша сегодняшняя мысль готова.',
     },
     'de': {
       'onboarding_title': 'Ein Gedanke.\nJeden Tag.',
@@ -253,7 +257,6 @@ class Strings {
       'premium_heading': 'Machen Sie ONE zu Ihrem.',
       'premium_desc': 'Jeden Tag derselbe Gedanke, mit voller Kontrolle über Zeit, Aussehen und Archiv.',
       'premium_exp': 'ONE+ ERLEBNIS',
-      'premium_banner_title': 'Weniger Konfiguration.\nMehr Atmosphäre.',
       'premium_banner_desc': 'Erweitert das tägliche Ritual, ohne Feeds oder Lärm hinzuzufügen.',
       'premium_feat_1_title': 'Wählen Sie Ihre Erinnerungszeit',
       'premium_feat_1_sub': 'Morgens, mittags oder abends.',
@@ -290,6 +293,8 @@ class Strings {
       'your_choice': 'Ihre Wahl:',
       'unlock_one_plus': 'ONE+ freischalten',
       'not_now': 'Nicht jetzt',
+      'notification_title': 'ONE',
+      'notification_body': 'Ihr heutiger Gedanke ist bereit.',
     },
     'es': {
       'onboarding_title': 'Un pensamiento.\nCada día.',
@@ -322,7 +327,7 @@ class Strings {
       'language': 'Idioma',
       'language_sub': 'Idioma de la aplicación',
       'section_premium': 'PREMIUM',
-      'one_plus_sub': 'Temas, archivo y futuros widgets',
+      'one_plus_sub': 'Temas, archivo и futuros widgets',
       'section_about': 'ACERCA DE',
       'about_one': 'Acerca de ONE',
       'about_one_sub': 'Idea, filosofía y fuentes',
@@ -387,6 +392,8 @@ class Strings {
       'your_choice': 'Tu elección:',
       'unlock_one_plus': 'Desbloquear ONE+',
       'not_now': 'Ahora no',
+      'notification_title': 'ONE',
+      'notification_body': 'Tu pensamiento de hoy está listo.',
     },
     'fr': {
       'onboarding_title': 'Une pensée.\nChaque jour.',
@@ -484,6 +491,8 @@ class Strings {
       'your_choice': 'Votre choix :',
       'unlock_one_plus': 'Débloquer ONE+',
       'not_now': 'Pas maintenant',
+      'notification_title': 'ONE',
+      'notification_body': 'Votre pensée du jour est prête.',
     },
     'pt_BR': {
       'onboarding_title': 'Um pensamento.\nTodo dia.',
@@ -581,6 +590,8 @@ class Strings {
       'your_choice': 'Sua escolha:',
       'unlock_one_plus': 'Desbloquear ONE+',
       'not_now': 'Agora não',
+      'notification_title': 'ONE',
+      'notification_body': 'Seu pensamento de hoje está pronto.',
     },
     'pt': {
       'onboarding_title': 'Um pensamento.\nTodos os dias.',
@@ -678,6 +689,8 @@ class Strings {
       'your_choice': 'A sua escolha:',
       'unlock_one_plus': 'Desbloquear ONE+',
       'not_now': 'Agora não',
+      'notification_title': 'ONE',
+      'notification_body': 'O seu pensamento de hoje está pronto.',
     },
   };
 
