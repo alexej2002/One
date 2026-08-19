@@ -1,15 +1,15 @@
 @echo off
-chcp 65001 > nul
+setlocal
 echo =======================================================
-echo [ONE] Запуск PREMIUM (разблокированной) версии на устройстве
+echo ONE: Launching PREMIUM UNLOCKED version on phone
 echo =======================================================
 echo.
 
-echo Проверка подключенных устройств:
-flutter devices
-echo.
-
-echo Запуск приложения ONE со всеми разблокированными функциями...
-flutter run --dart-define=FORCE_PREMIUM=true -d android
+call flutter run --dart-define=FORCE_PREMIUM=true -d 8e39c743
+if %errorlevel% neq 0 (
+    echo.
+    echo Trying default connected device...
+    call flutter run --dart-define=FORCE_PREMIUM=true
+)
 
 pause
