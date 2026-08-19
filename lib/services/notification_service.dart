@@ -128,8 +128,11 @@ class NotificationService {
     final BigTextStyleInformation bigTextStyleInformation =
         BigTextStyleInformation(
       body,
+      htmlFormatBigText: true,
       contentTitle: title,
-      summaryText: subText,
+      htmlFormatContentTitle: true,
+      summaryText: subText != null ? '<b>$subText</b>' : null,
+      htmlFormatSummaryText: true,
     );
 
     final AndroidNotificationDetails androidPlatformChannelSpecifics =

@@ -338,7 +338,8 @@ class AppState extends ChangeNotifier {
   Future<void> _rescheduleNotificationIfEnabled() async {
     if (_notificationsEnabled) {
       final now = DateTime.now();
-      final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
+      // Expanded date with full month name: e.g. "19 августа" / "August 19"
+      final dateStr = DateFormat.MMMMd(_locale).format(now);
       final body = _currentQuote != null
           ? '“${_currentQuote!.text}”\n— ${_currentQuote!.author}'
           : Strings.get(_locale, 'notification_body');
