@@ -47,11 +47,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Header
+              // Header with larger typography
               Column(
                 children: [
                   Text('✦', style: TextStyle(fontSize: 32, color: ext.gold)),
@@ -60,21 +60,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     Strings.get(locale, 'premium_heading'),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.lora(
-                      fontSize: 23,
-                      fontWeight: FontWeight.w400,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w500,
                       color: ext.ink,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Text(
                       Strings.get(locale, 'premium_desc'),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13.5,
                         color: ext.muted,
                         height: 1.35,
                       ),
@@ -83,7 +83,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ],
               ),
 
-              // 4 Features in a compact card
+              // 4 Features in a compact card with larger fonts
               Container(
                 decoration: BoxDecoration(
                   color: ext.card.withValues(alpha: 0.88),
@@ -94,12 +94,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF2C241B).withValues(alpha: 0.03),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     )
                   ],
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                 child: Column(
                   children: [
                     _buildFeatureItem(
@@ -134,39 +134,33 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ),
               ),
 
-              // Subscription plans (3 horizontal cards)
-              Row(
+              // Full-width spacious Subscription Plan Rows (never squished, balanced & centered)
+              Column(
                 children: [
-                  Expanded(
-                    child: _buildPlanCard(
-                      id: 'monthly',
-                      label: Strings.get(locale, 'monthly'),
-                      price: monthlyPrice,
-                      period: Strings.get(locale, 'per_month'),
-                      ext: ext,
-                    ),
+                  _buildPlanRow(
+                    id: 'yearly',
+                    label: Strings.get(locale, 'yearly'),
+                    price: yearlyPrice,
+                    period: Strings.get(locale, 'per_year'),
+                    ext: ext,
+                    isBestValue: true,
+                    bestValueText: Strings.get(locale, 'best_value'),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildPlanCard(
-                      id: 'yearly',
-                      label: Strings.get(locale, 'yearly'),
-                      price: yearlyPrice,
-                      period: Strings.get(locale, 'per_year'),
-                      ext: ext,
-                      isBestValue: true,
-                      bestValueText: Strings.get(locale, 'best_value'),
-                    ),
+                  const SizedBox(height: 8),
+                  _buildPlanRow(
+                    id: 'monthly',
+                    label: Strings.get(locale, 'monthly'),
+                    price: monthlyPrice,
+                    period: Strings.get(locale, 'per_month'),
+                    ext: ext,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildPlanCard(
-                      id: 'lifetime',
-                      label: Strings.get(locale, 'lifetime'),
-                      price: lifetimePrice,
-                      period: Strings.get(locale, 'one_time'),
-                      ext: ext,
-                    ),
+                  const SizedBox(height: 8),
+                  _buildPlanRow(
+                    id: 'lifetime',
+                    label: Strings.get(locale, 'lifetime'),
+                    price: lifetimePrice,
+                    period: Strings.get(locale, 'one_time'),
+                    ext: ext,
                   ),
                 ],
               ),
@@ -205,14 +199,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+                      minimumSize: const Size(double.infinity, 52),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: Text(
                       Strings.get(locale, 'continue_btn'),
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -230,7 +224,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     ),
                     child: Text(
                       Strings.get(locale, 'restore'),
-                      style: TextStyle(fontSize: 11.5, color: ext.muted),
+                      style: TextStyle(fontSize: 13, color: ext.muted),
                     ),
                   ),
                 ],
@@ -250,7 +244,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     required bool showDivider,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 7.0),
       decoration: BoxDecoration(
         border: showDivider
             ? Border(bottom: BorderSide(color: ext.line, width: 0.5))
@@ -258,7 +252,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
       ),
       child: Row(
         children: [
-          Text(icon, style: TextStyle(fontSize: 17, color: ext.gold)),
+          Text(icon, style: TextStyle(fontSize: 18, color: ext.gold)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -268,27 +262,27 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 12.5,
+                    fontSize: 13.5,
                     color: ext.ink,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 10.5,
+                    fontSize: 11.5,
                     color: ext.muted,
                   ),
                 ),
               ],
             ),
           ),
-          Icon(Icons.check, size: 16, color: ext.gold),
+          Icon(Icons.check, size: 18, color: ext.gold),
         ],
       ),
     );
   }
 
-  Widget _buildPlanCard({
+  Widget _buildPlanRow({
     required String id,
     required String label,
     required String price,
@@ -302,90 +296,119 @@ class _PremiumScreenState extends State<PremiumScreen> {
     return GestureDetector(
       onTap: () => setState(() => selectedPlan = id),
       behavior: HitTestBehavior.opaque,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-            decoration: BoxDecoration(
-              color: isActive ? ext.card : ext.card.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isActive ? ext.gold : const Color(0xFF352F28).withValues(alpha: 0.09),
-                width: isActive ? 1.5 : 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2C241B).withValues(alpha: 0.03),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: isActive ? ext.card : ext.card.withValues(alpha: 0.85),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isActive ? ext.gold : const Color(0xFF352F28).withValues(alpha: 0.09),
+            width: isActive ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2C241B).withValues(alpha: 0.025),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            )
+          ],
+          gradient: isActive
+              ? LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    ext.gold2.withValues(alpha: 0.45),
+                    ext.card,
+                  ],
                 )
-              ],
-              gradient: isActive
-                  ? LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        ext.gold2.withValues(alpha: 0.52),
-                        ext.card,
-                      ],
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Custom radio circle
+            Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isActive ? ext.gold : ext.muted,
+                  width: 1.5,
+                ),
+              ),
+              child: isActive
+                  ? Center(
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ext.gold,
+                        ),
+                      ),
                     )
                   : null,
             ),
-            child: Column(
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: ext.ink,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  price,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: ext.ink,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  period,
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    color: ext.muted,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 12),
+
+            // Plan Title
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w600,
+                color: ext.ink,
+              ),
             ),
-          ),
-          if (isBestValue && bestValueText != null)
-            Positioned(
-              top: -8,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: ext.gold,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    bestValueText,
-                    style: const TextStyle(
-                      fontSize: 8.5,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+
+            // Best value badge if present
+            if (isBestValue && bestValueText != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: ext.gold,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  bestValueText,
+                  style: const TextStyle(
+                    fontSize: 9.5,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+            ],
+
+            const Spacer(),
+
+            // Price and Period
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: price,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: ext.ink,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' / $period',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: ext.muted,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
