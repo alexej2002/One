@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../l10n/strings.dart';
 import 'contextual_paywall.dart';
 
 class PremiumReminderTimePicker extends StatefulWidget {
@@ -50,14 +51,16 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
     });
   }
 
-  String get _periodCaption {
-    if (_hour < 11) return 'MORNING';
-    if (_hour < 17) return 'DAYTIME';
-    return 'EVENING';
+  String _getPeriodCaption(String locale) {
+    if (_hour < 11) return Strings.get(locale, 'period_morning');
+    if (_hour < 17) return Strings.get(locale, 'period_daytime');
+    return Strings.get(locale, 'period_evening');
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
+    final locale = appState.locale;
     final ext = Theme.of(context).extension<OneThemeExtension>()!;
     final hourStr = _hour.toString().padLeft(2, '0');
     final minuteStr = _minute.toString().padLeft(2, '0');
@@ -71,7 +74,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
             Text('◷', style: TextStyle(fontSize: 38, color: ext.gold, height: 1)),
             const SizedBox(height: 10),
             Text(
-              'Choose your reminder time',
+              Strings.get(locale, 'reminder_picker_title'),
               textAlign: TextAlign.center,
               style: GoogleFonts.lora(
                 fontSize: 27,
@@ -84,7 +87,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Text(
-                'Morning, lunch or evening. ONE arrives when it fits your day best.',
+                Strings.get(locale, 'reminder_picker_sub'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
@@ -150,6 +153,22 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
                   color: ext.gold.withValues(alpha: 0.55),
                 ),
               ),
+              Positioned(
+                bottom: 16,
+                child: Container(
+                  width: 1.5,
+                  height: 8,
+                  color: ext.gold.withValues(alpha: 0.55),
+                ),
+              ),
+              Positioned(
+                left: 16,
+                child: Container(
+                  width: 8,
+                  height: 1.5,
+                  color: ext.gold.withValues(alpha: 0.55),
+                ),
+              ),
 
               // Time & Caption
               Column(
@@ -193,7 +212,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _periodCaption,
+                    _getPeriodCaption(locale),
                     style: TextStyle(
                       fontSize: 8.5,
                       letterSpacing: 2.2,
@@ -216,7 +235,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
               child: _buildMomentCard(
                 ext,
                 icon: '☼',
-                title: 'Morning',
+                title: Strings.get(locale, 'moment_morning'),
                 timeStr: '08:00',
                 isActive: _hour == 8 && _minute == 0,
                 onTap: () => _setMoment(8, 0),
@@ -227,7 +246,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
               child: _buildMomentCard(
                 ext,
                 icon: '◐',
-                title: 'Lunch',
+                title: Strings.get(locale, 'moment_lunch'),
                 timeStr: '13:00',
                 isActive: _hour == 13 && _minute == 0,
                 onTap: () => _setMoment(13, 0),
@@ -238,7 +257,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
               child: _buildMomentCard(
                 ext,
                 icon: '☾',
-                title: 'Evening',
+                title: Strings.get(locale, 'moment_evening'),
                 timeStr: '20:00',
                 isActive: _hour == 20 && _minute == 0,
                 onTap: () => _setMoment(20, 0),
@@ -263,7 +282,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
                 child: Column(
                   children: [
                     Text(
-                      'HOUR',
+                      Strings.get(locale, 'stepper_hour'),
                       style: TextStyle(
                         fontSize: 8.5,
                         letterSpacing: 1.8,
@@ -286,7 +305,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
                 child: Column(
                   children: [
                     Text(
-                      'MINUTE',
+                      Strings.get(locale, 'stepper_minute'),
                       style: TextStyle(
                         fontSize: 8.5,
                         letterSpacing: 1.8,
@@ -313,7 +332,6 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
         // Save Button
         ElevatedButton(
           onPressed: () {
-            final appState = context.read<AppState>();
             final chosenTime = TimeOfDay(hour: _hour, minute: _minute);
 
             if (appState.isPremium) {
@@ -322,7 +340,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
                 widget.onSaved!();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Reminder set to $hourStr:$minuteStr')),
+                  SnackBar(content: Text('${Strings.get(locale, 'reminder_saved')} $hourStr:$minuteStr')),
                 );
               }
             } else {
@@ -335,10 +353,10 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
               ContextualPaywallSheet.show(
                 context,
                 title: 'ONE+',
-                description: 'Custom reminder time is part of ONE+.',
-                choiceBadge: 'Your choice: $hourStr:$minuteStr',
-                unlockLabel: 'Unlock ONE+',
-                cancelLabel: 'Not now',
+                description: Strings.get(locale, 'reminder_paywall_desc'),
+                choiceBadge: '${Strings.get(locale, 'your_choice')} $hourStr:$minuteStr',
+                unlockLabel: Strings.get(locale, 'unlock_one_plus'),
+                cancelLabel: Strings.get(locale, 'not_now'),
                 onUnlocked: () {
                   if (appState.isPremium && widget.onSaved != null) {
                     widget.onSaved!();
@@ -353,9 +371,9 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          child: const Text(
-            'Set reminder',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          child: Text(
+            Strings.get(locale, 'set_reminder_btn'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -380,34 +398,48 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: isActive ? ext.gold : const Color(0xFF352F28).withValues(alpha: 0.09),
-            width: isActive ? 1.5 : 1.0,
+            width: isActive ? 1.5 : 1,
           ),
           gradient: isActive
               ? LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
-                    Color.lerp(ext.gold2, ext.card, 0.45)!,
+                    ext.gold2.withValues(alpha: 0.9),
                     ext.card,
                   ],
                 )
               : null,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF2C241B).withValues(alpha: isActive ? 0.05 : 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: const Color(0xFF2A231A).withValues(alpha: isActive ? 0.12 : 0.035),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
             )
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(icon, style: TextStyle(fontSize: 16, color: ext.gold)),
-            const SizedBox(height: 3),
-            Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: ext.ink)),
-            const SizedBox(height: 1),
-            Text(timeStr, style: TextStyle(fontSize: 9.5, color: ext.muted)),
+            Text(icon, style: TextStyle(fontSize: 14, color: isActive ? ext.ink : ext.muted)),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: ext.ink,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              timeStr,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: ext.muted,
+              ),
+            ),
           ],
         ),
       ),
@@ -425,33 +457,31 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
       decoration: BoxDecoration(
         color: ext.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFF352F28).withValues(alpha: 0.10),
-        ),
+        border: Border.all(color: const Color(0xFF352F28).withValues(alpha: 0.08)),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
+            icon: const Icon(Icons.remove, size: 16),
+            color: ext.ink,
             onPressed: onMinus,
-            icon: const Text('−', style: TextStyle(fontSize: 20, height: 1)),
-            color: ext.muted,
+            splashRadius: 18,
             padding: EdgeInsets.zero,
           ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.lora(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: ext.ink,
-              ),
+          Text(
+            value,
+            style: GoogleFonts.lora(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: ext.ink,
             ),
           ),
           IconButton(
+            icon: const Icon(Icons.add, size: 16),
+            color: ext.ink,
             onPressed: onPlus,
-            icon: const Text('+', style: TextStyle(fontSize: 20, height: 1)),
-            color: ext.muted,
+            splashRadius: 18,
             padding: EdgeInsets.zero,
           ),
         ],

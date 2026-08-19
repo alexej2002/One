@@ -33,7 +33,7 @@ class ReminderFeatureScreen extends StatelessWidget {
             PremiumReminderTimePicker(
               onSaved: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Daily ritual reminder saved!')),
+                  SnackBar(content: Text(Strings.get(locale, 'reminder_saved'))),
                 );
                 Navigator.pop(context);
               },
