@@ -1,32 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
-    android:padding="20dp"
-    android:id="@+id/widget_root">
+    android:background="@drawable/widget_bg"
+    android:padding="18dp">
 
     <TextView
-        android:id="@+id/quote_text"
+        android:id="@+id/quote_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:letterSpacing="0.15"
+        android:text="ONE"
+        android:textColor="#B88F4D"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:gravity="center"
-        android:text="One thought. Every day."
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:textStyle="italic"
-        android:lineSpacingExtra="4dp" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/quote_author"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/quote_text"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:text="— ONE"
-        android:textColor="#888888"
-        android:textSize="12sp" />
+        <TextView
+            android:id="@+id/quote_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:text="One thought. Every day."
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:id="@+id/quote_author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="— ONE"
+            android:textColor="#A89F91"
+            android:textSize="11sp" />
+    </LinearLayout>
 
 </RelativeLayout>

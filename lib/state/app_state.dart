@@ -9,6 +9,7 @@ import '../services/quote_service.dart';
 import '../services/notification_service.dart';
 import '../models/quote.dart';
 import '../l10n/strings.dart';
+import 'package:intl/intl.dart';
 
 // TODO: Replace with your actual RevenueCat API keys
 const String appleApiKey = 'appl_YOUR_API_KEY_HERE';
@@ -211,9 +212,13 @@ class AppState extends ChangeNotifier {
       _currentQuote = _quoteService.getQuoteForDay(dayIndex);
       
       if (_currentQuote != null) {
+        final now = DateTime.now();
+        final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
         HomeWidget.saveWidgetData<String>('quote_text', _currentQuote!.text);
         HomeWidget.saveWidgetData<String>('quote_author', '— ${_currentQuote!.author}');
+        HomeWidget.saveWidgetData<String>('quote_date', '$dateStr · ONE');
         HomeWidget.updateWidget(name: 'QuoteWidgetProvider');
+        _rescheduleNotificationIfEnabled();
       }
     }
   }
@@ -325,8 +330,13 @@ class AppState extends ChangeNotifier {
   
   Future<void> _rescheduleNotificationIfEnabled() async {
     if (_notificationsEnabled) {
-      final title = Strings.get(_locale, 'notification_title');
-      final body = Strings.get(_locale, 'notification_body');
+      final now = DateTime.now();
+      final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
+      final title = 'ONE · $dateStr';
+      final body = _currentQuote != null
+          ? '“${_currentQuote!.text}”\n— ${_currentQuote!.author}'
+          : Strings.get(_locale, 'notification_body');
+
       await _notificationService.scheduleDailyReminder(
         _notificationTime,
         title,

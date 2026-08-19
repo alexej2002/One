@@ -15,9 +15,11 @@ class QuoteWidgetProvider : HomeWidgetProvider() {
                 // Get data from flutter via SharedPreferences
                 val quoteText = widgetData.getString("quote_text", "One thought. Every day.")
                 val quoteAuthor = widgetData.getString("quote_author", "— ONE")
+                val quoteDate = widgetData.getString("quote_date", "ONE")
 
                 setTextViewText(R.id.quote_text, quoteText)
                 setTextViewText(R.id.quote_author, quoteAuthor)
+                setTextViewText(R.id.quote_date, quoteDate)
 
                 // Open app on click
                 val intent = Intent(context, MainActivity::class.java)

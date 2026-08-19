@@ -106,7 +106,14 @@ class NotificationService {
 
     debugPrint("Scheduled daily reminder at: $scheduledDate (current tz.local: $now)");
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    final BigTextStyleInformation bigTextStyleInformation =
+        BigTextStyleInformation(
+      body,
+      contentTitle: title,
+      summaryText: 'ONE',
+    );
+
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'daily_reminder_channel_v3',
       'Daily Ritual Reminder',
@@ -115,8 +122,9 @@ class NotificationService {
       priority: Priority.high,
       playSound: true,
       enableVibration: true,
+      styleInformation: bigTextStyleInformation,
     );
-    const NotificationDetails platformChannelSpecifics =
+    final NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _notificationsPlugin.zonedSchedule(
