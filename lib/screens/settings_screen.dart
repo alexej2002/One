@@ -7,6 +7,10 @@ import 'premium_screen.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  String _formatTime(TimeOfDay time, BuildContext context) {
+    return time.format(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
@@ -24,6 +28,7 @@ class SettingsScreen extends StatelessWidget {
       'pt': 'Português',
     };
     final lang = langMap[locale] ?? 'English';
+    final timeStr = _formatTime(state.notificationTime, context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -59,19 +64,32 @@ class SettingsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 children: [
-                  _buildSectionLabel(Strings.get(locale, 'daily_quote'), context),
+                  _buildSectionLabel(Strings.get(locale, 'daily_quote') ?? 'Daily Quote', context),
                   _buildSettingsCard(
                     context,
                     children: [
-                      _buildSettingRow(Icons.access_time, Strings.get(locale, 'reminder_time'), trailing: '08:00', context: context, locale: locale),
-                      _buildSettingRow(Icons.notifications_none, Strings.get(locale, 'notifications'), isSwitch: true, context: context, locale: locale),
+                      _buildSettingRow(
+                        Icons.notifications_none,
+                        Strings.get(locale, 'notifications'),
+                        isSwitch: true,
+                        switchValue: state.notificationsEnabled,
+                        context: context,
+                        locale: locale,
+                      ),
+                      _buildSettingRow(
+                        Icons.access_time,
+                        Strings.get(locale, 'reminder_time') ?? 'Reminder Time',
+                        trailing: timeStr,
+                        context: context,
+                        locale: locale,
+                      ),
                       _buildSettingRow(Icons.palette_outlined, Strings.get(locale, 'theme'), trailing: theme, context: context, locale: locale),
                       _buildSettingRow(Icons.language, Strings.get(locale, 'language'), trailing: lang, context: context, locale: locale),
                     ],
                   ),
 
                   const SizedBox(height: 32),
-                  _buildSectionLabel(Strings.get(locale, 'one_premium'), context),
+                  _buildSectionLabel(Strings.get(locale, 'one_premium') ?? 'ONE Premium', context),
                   if (!isPremium)
                     GestureDetector(
                       onTap: () {
@@ -128,19 +146,19 @@ class SettingsScreen extends StatelessWidget {
                         children: [
                           const Icon(Icons.check_circle, color: Colors.green),
                           const SizedBox(width: 16),
-                          Text(Strings.get(locale, 'premium_active'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(Strings.get(locale, 'premium_active') ?? 'Premium Active', style: const TextStyle(fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
 
                   const SizedBox(height: 32),
-                  _buildSectionLabel(Strings.get(locale, 'about'), context),
+                  _buildSectionLabel(Strings.get(locale, 'about') ?? 'About', context),
                   _buildSettingsCard(
                     context,
                     children: [
                       _buildSettingRow(Icons.privacy_tip_outlined, Strings.get(locale, 'privacy_policy'), context: context, locale: locale),
                       _buildSettingRow(Icons.description_outlined, Strings.get(locale, 'terms'), context: context, locale: locale),
-                      _buildSettingRow(Icons.mail_outline, Strings.get(locale, 'contact'), context: context, locale: locale),
+                      _buildSettingRow(Icons.mail_outline, Strings.get(locale, 'contact') ?? 'Contact us', context: context, locale: locale),
                     ],
                   ),
                 ],
@@ -185,13 +203,29 @@ class SettingsScreen extends StatelessWidget {
     String title, {
     String? trailing,
     bool isSwitch = false,
+    bool switchValue = false,
     required BuildContext context,
     String locale = 'en',
   }) {
     return InkWell(
-      onTap: () {
+      onTap: () async {
         final state = context.read<AppState>();
-        if (title == Strings.get(locale, 'theme')) {
+        
+        if (isSwitch && title == Strings.get(locale, 'notifications')) {
+          await state.toggleNotifications();
+        } else if (title == (Strings.get(locale, 'reminder_time') ?? 'Reminder Time')) {
+          if (!state.isPremium) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const PremiumScreen()));
+            return;
+          }
+          final newTime = await showTimePicker(
+            context: context,
+            initialTime: state.notificationTime,
+          );
+          if (newTime != null) {
+            state.setNotificationTime(newTime);
+          }
+        } else if (title == Strings.get(locale, 'theme')) {
           if (!state.isPremium) {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const PremiumScreen()));
           } else {
@@ -204,30 +238,12 @@ class SettingsScreen extends StatelessWidget {
               return SimpleDialog(
                 title: const Text('Select Language'),
                 children: <Widget>[
-                  SimpleDialogOption(
-                    onPressed: () { Navigator.pop(context, 'en'); },
-                    child: const Text('English'),
-                  ),
-                  SimpleDialogOption(
-                    onPressed: () { Navigator.pop(context, 'ru'); },
-                    child: const Text('Русский'),
-                  ),
-                  SimpleDialogOption(
-                    onPressed: () { Navigator.pop(context, 'de'); },
-                    child: const Text('Deutsch'),
-                  ),
-                  SimpleDialogOption(
-                    onPressed: () { Navigator.pop(context, 'es'); },
-                    child: const Text('Español'),
-                  ),
-                  SimpleDialogOption(
-                    onPressed: () { Navigator.pop(context, 'fr'); },
-                    child: const Text('Français'),
-                  ),
-                  SimpleDialogOption(
-                    onPressed: () { Navigator.pop(context, 'pt'); },
-                    child: const Text('Português'),
-                  ),
+                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'en'); }, child: const Text('English')),
+                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'ru'); }, child: const Text('Русский')),
+                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'de'); }, child: const Text('Deutsch')),
+                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'es'); }, child: const Text('Español')),
+                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'fr'); }, child: const Text('Français')),
+                  SimpleDialogOption(onPressed: () { Navigator.pop(context, 'pt'); }, child: const Text('Português')),
                 ],
               );
             }
@@ -262,8 +278,13 @@ class SettingsScreen extends StatelessWidget {
               Icon(Icons.chevron_right, size: 18, color: Theme.of(context).textTheme.bodyMedium?.color),
             ] else if (isSwitch) ...[
               Switch(
-                value: true,
-                onChanged: (val) {},
+                value: switchValue,
+                onChanged: (val) {
+                  final state = context.read<AppState>();
+                  if (title == Strings.get(locale, 'notifications')) {
+                    state.toggleNotifications();
+                  }
+                },
                 activeColor: Theme.of(context).primaryColor,
               ),
             ] else ...[

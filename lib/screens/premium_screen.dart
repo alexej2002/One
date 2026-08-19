@@ -169,6 +169,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               onPressed: () async {
                                 final state = context.read<AppState>();
                                 final offerings = state.offerings;
+                                
                                 if (offerings != null && offerings.current != null) {
                                   Package? packageToBuy;
                                   if (selectedPlan == 'monthly') {
@@ -184,6 +185,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                     if (success && mounted) {
                                       Navigator.pop(context);
                                     }
+                                  }
+                                } else {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('RevenueCat is not configured or no packages available.')),
+                                    );
                                   }
                                 }
                               },

@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:home_widget/home_widget.dart';
 import '../services/quote_service.dart';
+import '../services/notification_service.dart';
 import '../models/quote.dart';
+import '../l10n/strings.dart';
 
 // TODO: Replace with your actual RevenueCat API keys
 const String appleApiKey = 'appl_YOUR_API_KEY_HERE';
@@ -14,6 +17,7 @@ class AppState extends ChangeNotifier {
   static const List<String> supportedLocales = ['en', 'ru', 'de', 'es', 'fr', 'pt'];
 
   final QuoteService _quoteService = QuoteService();
+  final NotificationService _notificationService = NotificationService();
   
   bool _isInitialized = false;
   bool _isOnboardingComplete = false;
@@ -24,6 +28,9 @@ class AppState extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;
   String _locale = 'en';
   
+  bool _notificationsEnabled = false;
+  TimeOfDay _notificationTime = const TimeOfDay(hour: 9, minute: 0);
+  
   Offerings? _offerings;
 
   bool get isInitialized => _isInitialized;
@@ -33,6 +40,9 @@ class AppState extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   String get locale => _locale;
   Offerings? get offerings => _offerings;
+  
+  bool get notificationsEnabled => _notificationsEnabled;
+  TimeOfDay get notificationTime => _notificationTime;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -44,6 +54,12 @@ class AppState extends ChangeNotifier {
     final isDark = prefs.getBool('is_dark_theme') ?? true;
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     _locale = prefs.getString('locale') ?? _detectDeviceLocale();
+    
+    // Load notifications state
+    _notificationsEnabled = prefs.getBool('notifications_enabled') ?? false;
+    final hour = prefs.getInt('notification_hour') ?? 9;
+    final minute = prefs.getInt('notification_minute') ?? 0;
+    _notificationTime = TimeOfDay(hour: hour, minute: minute);
     
     // Load or set start date
     final startDateStr = prefs.getString('start_date');
@@ -57,6 +73,8 @@ class AppState extends ChangeNotifier {
     // Load quotes
     await _quoteService.loadQuotes(_locale);
     _updateCurrentQuote();
+    
+    await _notificationService.init();
     
     // Initialize RevenueCat
     await _initRevenueCat();
@@ -110,8 +128,8 @@ class AppState extends ChangeNotifier {
 
   Future<bool> purchasePackage(Package package) async {
     try {
-      final customerInfo = await Purchases.purchasePackage(package);
-      _checkPremiumStatus(customerInfo);
+      final purchaseResult = await Purchases.purchasePackage(package);
+      _checkPremiumStatus(purchaseResult.customerInfo);
       return true;
     } catch (e) {
       debugPrint("Purchase failed: $e");
@@ -141,6 +159,12 @@ class AppState extends ChangeNotifier {
     if (_startDate != null) {
       int dayIndex = _quoteService.calculateDayIndex(_startDate!, DateTime.now());
       _currentQuote = _quoteService.getQuoteForDay(dayIndex);
+      
+      if (_currentQuote != null) {
+        HomeWidget.saveWidgetData<String>('quote_text', _currentQuote!.text);
+        HomeWidget.saveWidgetData<String>('quote_author', '— ${_currentQuote!.author}');
+        HomeWidget.updateWidget(name: 'QuoteWidgetProvider');
+      }
     }
   }
 
@@ -174,7 +198,48 @@ class AppState extends ChangeNotifier {
     await prefs.setString('locale', languageCode);
     await _quoteService.loadQuotes(_locale);
     _updateCurrentQuote();
+    _rescheduleNotificationIfEnabled();
     notifyListeners();
+  }
+  
+  Future<void> toggleNotifications() async {
+    if (!_notificationsEnabled) {
+      final granted = await _notificationService.requestPermissions();
+      if (!granted) return;
+    }
+
+    _notificationsEnabled = !_notificationsEnabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', _notificationsEnabled);
+    
+    if (_notificationsEnabled) {
+      _rescheduleNotificationIfEnabled();
+    } else {
+      await _notificationService.cancelAll();
+    }
+    notifyListeners();
+  }
+  
+  Future<void> setNotificationTime(TimeOfDay time) async {
+    _notificationTime = time;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('notification_hour', time.hour);
+    await prefs.setInt('notification_minute', time.minute);
+    
+    if (_notificationsEnabled) {
+      _rescheduleNotificationIfEnabled();
+    }
+    notifyListeners();
+  }
+  
+  Future<void> _rescheduleNotificationIfEnabled() async {
+    if (_notificationsEnabled) {
+      await _notificationService.scheduleDailyReminder(
+        _notificationTime,
+        Strings.get(_locale, 'notification_title') ?? 'ONE',
+        Strings.get(_locale, 'notification_body') ?? 'Your daily quote is ready.',
+      );
+    }
   }
 }
 
