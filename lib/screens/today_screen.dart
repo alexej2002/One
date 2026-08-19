@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../l10n/strings.dart';
@@ -138,9 +139,18 @@ class TodayScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildActionButton(context, Icons.favorite_border, Strings.get(locale, 'save')),
-                      _buildActionButton(context, Icons.ios_share, Strings.get(locale, 'share')),
-                      _buildActionButton(context, Icons.more_horiz, Strings.get(locale, 'more')),
+                      _buildActionButton(context, Icons.favorite_border, Strings.get(locale, 'save'), () {
+                        // TODO: Save quote
+                      }),
+                      _buildActionButton(context, Icons.ios_share, Strings.get(locale, 'share'), () {
+                        if (quote != null) {
+                          final textToShare = 'вЂњ${quote.text}вЂќ\n\nвЂ” ${quote.author}\n\nVia ONE app';
+                          Share.share(textToShare);
+                        }
+                      }),
+                      _buildActionButton(context, Icons.more_horiz, Strings.get(locale, 'more'), () {
+                        // TODO: More
+                      }),
                     ],
                   ),
                 ),
@@ -152,33 +162,36 @@ class TodayScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, IconData icon, String label) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildActionButton(BuildContext context, IconData icon, String label, VoidCallback onTap) {
     final color = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white;
     
-    return Column(
-      children: [
-        Container(
-          width: 58,
-          height: 58,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withValues(alpha: 0.05),
-            border: Border.all(
-              color: color.withValues(alpha: 0.1),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.05),
+              border: Border.all(
+                color: color.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
-          child: Icon(icon, color: color),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
