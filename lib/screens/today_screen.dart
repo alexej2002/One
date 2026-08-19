@@ -194,9 +194,9 @@ class TodayScreen extends StatelessWidget {
                   ),
                 ),
                 
-                // Bottom Actions: Favorite, Share, More (evenly spaced, with column layout like earlier version)
+                // Bottom Actions: Favorite and Share
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 32.0, left: 28.0, right: 28.0),
+                  padding: const EdgeInsets.only(bottom: 32.0, left: 48.0, right: 48.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -218,13 +218,6 @@ class TodayScreen extends StatelessWidget {
                             final textToShare = '“${quote.text}”\n\n— ${quote.author}\n\nVia ONE app';
                             Share.share(textToShare);
                           }
-                        },
-                      ),
-                      _buildActionButton(
-                        icon: Icons.more_horiz,
-                        label: Strings.get(locale, 'more'),
-                        onTap: () {
-                          _showMoreSheet(context, state, quote, locale);
                         },
                       ),
                     ],
@@ -284,102 +277,6 @@ class TodayScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showMoreSheet(BuildContext context, AppState state, Quote? quote, String locale) {
-    if (quote == null) return;
-    final isFav = state.isFavorite(quote);
-    final ext = Theme.of(context).extension<OneThemeExtension>()!;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: ext.bg2,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          padding: EdgeInsets.only(
-            left: 18, 
-            right: 18, 
-            top: 12, 
-            bottom: 24 + MediaQuery.of(context).padding.bottom
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: ext.line,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                margin: const EdgeInsets.only(bottom: 18),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(Strings.get(locale, 'today'), style: GoogleFonts.lora(fontSize: 24, color: ext.ink)),
-              ),
-              const SizedBox(height: 16),
-              _buildSheetAction(
-                ext,
-                isFav ? Strings.get(locale, 'saved_to_favorites') : Strings.get(locale, 'save_to_favorites'),
-                Strings.get(locale, 'keep_today'),
-                isFav ? '♥' : '♡',
-                isFav,
-                () {
-                  state.toggleFavorite(quote);
-                  Navigator.pop(context);
-                },
-              ),
-              _buildSheetAction(
-                ext,
-                Strings.get(locale, 'about_quote'),
-                Strings.get(locale, 'about_quote_sub'),
-                '›',
-                false,
-                () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSheetAction(OneThemeExtension ext, String title, String sub, String iconTxt, bool active, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        margin: const EdgeInsets.symmetric(vertical: 7),
-        decoration: BoxDecoration(
-          color: ext.card,
-          border: Border.all(color: active ? ext.gold : ext.line),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: ext.ink)),
-                const SizedBox(height: 3),
-                Text(sub, style: TextStyle(fontSize: 12, color: ext.muted)),
-              ],
-            ),
-            Text(iconTxt, style: TextStyle(fontSize: 18, color: active ? ext.gold : ext.muted)),
-          ],
-        ),
       ),
     );
   }
