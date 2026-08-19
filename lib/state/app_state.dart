@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,6 +33,8 @@ class AppState extends ChangeNotifier {
   TimeOfDay _notificationTime = const TimeOfDay(hour: 9, minute: 0);
   
   Offerings? _offerings;
+  
+  List<Quote> _favorites = [];
 
   bool get isInitialized => _isInitialized;
   bool get isOnboardingComplete => _isOnboardingComplete;
@@ -43,6 +46,7 @@ class AppState extends ChangeNotifier {
   
   bool get notificationsEnabled => _notificationsEnabled;
   TimeOfDay get notificationTime => _notificationTime;
+  List<Quote> get favorites => _favorites;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -73,6 +77,12 @@ class AppState extends ChangeNotifier {
     // Load quotes
     await _quoteService.loadQuotes(_locale);
     _updateCurrentQuote();
+    
+    // Load favorites
+    final favListString = prefs.getStringList('favorites');
+    if (favListString != null) {
+      _favorites = favListString.map((str) => Quote.fromJson(jsonDecode(str))).toList();
+    }
     
     await _notificationService.init();
     
@@ -240,6 +250,24 @@ class AppState extends ChangeNotifier {
         Strings.get(_locale, 'notification_body') ?? 'Your daily quote is ready.',
       );
     }
+  }
+
+  bool isFavorite(Quote quote) {
+    return _favorites.any((q) => q.text == quote.text);
+  }
+
+  Future<void> toggleFavorite(Quote quote) async {
+    if (isFavorite(quote)) {
+      _favorites.removeWhere((q) => q.text == quote.text);
+    } else {
+      _favorites.add(quote);
+    }
+    
+    final prefs = await SharedPreferences.getInstance();
+    final favListString = _favorites.map((q) => jsonEncode(q.toJson())).toList();
+    await prefs.setStringList('favorites', favListString);
+    
+    notifyListeners();
   }
 }
 

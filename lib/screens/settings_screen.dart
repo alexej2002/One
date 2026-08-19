@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../l10n/strings.dart';
 import 'premium_screen.dart';
+import 'favorites_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -68,6 +69,12 @@ class SettingsScreen extends StatelessWidget {
                   _buildSettingsCard(
                     context,
                     children: [
+                      _buildSettingRow(
+                        Icons.favorite_border,
+                        Strings.get(locale, 'saved_quotes') ?? 'Saved Quotes',
+                        context: context,
+                        locale: locale,
+                      ),
                       _buildSettingRow(
                         Icons.notifications_none,
                         Strings.get(locale, 'notifications'),
@@ -211,7 +218,10 @@ class SettingsScreen extends StatelessWidget {
       onTap: () async {
         final state = context.read<AppState>();
         
-        if (isSwitch && title == Strings.get(locale, 'notifications')) {
+        if (title == (Strings.get(locale, 'saved_quotes') ?? 'Saved Quotes')) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+          return;
+        } else if (isSwitch && title == Strings.get(locale, 'notifications')) {
           await state.toggleNotifications();
         } else if (title == (Strings.get(locale, 'reminder_time') ?? 'Reminder Time')) {
           if (!state.isPremium) {

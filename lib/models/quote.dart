@@ -10,4 +10,11 @@ class Quote {
       author: json['author'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'text': text,
+      'author': author,
+    };
+  }
 }

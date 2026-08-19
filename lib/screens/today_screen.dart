@@ -62,9 +62,14 @@ class TodayScreen extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.favorite_border),
+                        icon: Icon(
+                          quote != null && state.isFavorite(quote) ? Icons.favorite : Icons.favorite_border,
+                          color: quote != null && state.isFavorite(quote) ? Colors.redAccent : null,
+                        ),
                         onPressed: () {
-                          // TODO: Save quote
+                          if (quote != null) {
+                            state.toggleFavorite(quote);
+                          }
                         },
                       ),
                     ],
@@ -139,12 +144,20 @@ class TodayScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildActionButton(context, Icons.favorite_border, Strings.get(locale, 'save'), () {
-                        // TODO: Save quote
-                      }),
+                      _buildActionButton(
+                        context, 
+                        quote != null && state.isFavorite(quote) ? Icons.favorite : Icons.favorite_border, 
+                        Strings.get(locale, 'save'), 
+                        () {
+                          if (quote != null) {
+                            state.toggleFavorite(quote);
+                          }
+                        },
+                        iconColor: quote != null && state.isFavorite(quote) ? Colors.redAccent : null,
+                      ),
                       _buildActionButton(context, Icons.ios_share, Strings.get(locale, 'share'), () {
                         if (quote != null) {
-                          final textToShare = 'вЂњ${quote.text}вЂќ\n\nвЂ” ${quote.author}\n\nVia ONE app';
+                          final textToShare = '“${quote.text}”\n\n— ${quote.author}\n\nVia ONE app';
                           Share.share(textToShare);
                         }
                       }),
@@ -162,7 +175,7 @@ class TodayScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, IconData icon, String label, VoidCallback onTap) {
+  Widget _buildActionButton(BuildContext context, IconData icon, String label, VoidCallback onTap, {Color? iconColor}) {
     final color = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white;
     
     return GestureDetector(
@@ -180,7 +193,7 @@ class TodayScreen extends StatelessWidget {
                 color: color.withValues(alpha: 0.1),
               ),
             ),
-            child: Icon(icon, color: color),
+            child: Icon(icon, color: iconColor ?? color),
           ),
           const SizedBox(height: 8),
           Text(
