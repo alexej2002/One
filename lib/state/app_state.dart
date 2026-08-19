@@ -22,7 +22,7 @@ class AppState extends ChangeNotifier {
   
   bool _isInitialized = false;
   bool _isOnboardingComplete = false;
-  bool _isPremium = false;
+  bool _isPremium = const bool.fromEnvironment('FORCE_PREMIUM', defaultValue: false);
   DateTime? _startDate;
   Quote? _currentQuote;
   
@@ -148,6 +148,13 @@ class AppState extends ChangeNotifier {
   }
 
   void _checkPremiumStatus(CustomerInfo customerInfo) {
+    // If built with FORCE_PREMIUM, keep premium enabled
+    if (const bool.fromEnvironment('FORCE_PREMIUM', defaultValue: false)) {
+      _isPremium = true;
+      notifyListeners();
+      return;
+    }
+
     // Entitlement name must match what you set in RevenueCat dashboard (e.g., 'premium')
     const entitlementIdentifier = 'premium';
     final isPro = customerInfo.entitlements.all[entitlementIdentifier]?.isActive ?? false;
