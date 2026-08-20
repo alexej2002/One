@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../l10n/strings.dart';
@@ -8,6 +9,9 @@ import '../widgets/nav_sheet.dart';
 import '../widgets/premium_reminder_picker.dart';
 import '../widgets/contextual_paywall.dart';
 import 'premium_screen.dart';
+import 'legal_doc_screen.dart';
+import 'about_screen.dart';
+import '../l10n/legal_content.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -125,13 +129,47 @@ class SettingsScreen extends StatelessWidget {
           _buildLabel(Strings.get(locale, 'section_about'), ext),
           _buildCard(ext, [
             _buildRow(ext, Icons.info_outline, Strings.get(locale, 'about_one'), Strings.get(locale, 'about_one_sub'), onTap: () {
-              // about info
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => AboutScreen(locale: locale),
+                ),
+              );
             }),
-            _buildRow(ext, Icons.share_outlined, Strings.get(locale, 'share_one'), null, isLink: true, onTap: () {
-              // share app
+            _buildRow(ext, Icons.shield_outlined, Strings.get(locale, 'privacy_policy'), null, isLink: true, onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => LegalDocScreen(
+                    docData: LegalContent.getPrivacyPolicy(locale),
+                  ),
+                ),
+              );
             }),
-            _buildRow(ext, Icons.mail_outline, Strings.get(locale, 'send_feedback'), null, isLink: true, onTap: () {
-              // mail feedback
+            _buildRow(ext, Icons.article_outlined, Strings.get(locale, 'terms_of_use'), null, isLink: true, onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => LegalDocScreen(
+                    docData: LegalContent.getTermsOfUse(locale),
+                  ),
+                ),
+              );
+            }),
+            _buildRow(ext, Icons.mail_outline, Strings.get(locale, 'send_feedback'), null, isLink: true, onTap: () async {
+              final Uri emailLaunchUri = Uri(
+                scheme: 'mailto',
+                path: 'kindpeople2020@gmail.com',
+                queryParameters: {
+                  'subject': 'ONE App Feedback',
+                },
+              );
+              try {
+                if (await canLaunchUrl(emailLaunchUri)) {
+                  await launchUrl(emailLaunchUri);
+                } else {
+                  await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
+                }
+              } catch (e) {
+                debugPrint("Could not launch email: $e");
+              }
             }),
           ]),
           
