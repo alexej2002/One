@@ -3,27 +3,29 @@ import 'package:flutter/services.dart';
 import '../models/quote.dart';
 
 class QuoteService {
-  List<Quote> _quotes = [];
+  List<Quote> _allQuotes = [];
+  String _currentLocale = 'en';
 
   Future<void> loadQuotes(String locale) async {
-    String filename = 'assets/quotes.json'; // fallback
-    if (locale == 'pt_BR') {
-      filename = 'assets/quotes_pt_br.json';
-    } else if (['ru', 'de', 'es', 'fr', 'pt'].contains(locale)) {
-      filename = 'assets/quotes_$locale.json';
+    _currentLocale = locale;
+    if (_allQuotes.isEmpty) {
+      final String response = await rootBundle.loadString('assets/one_quotes_365.json');
+      final data = await json.decode(response) as List;
+      _allQuotes = data
+          .map((item) => Quote.fromJson(item as Map<String, dynamic>, _currentLocale))
+          .toList();
+    } else {
+      // Re-map localized texts for the active locale without re-reading file
+      _allQuotes = _allQuotes.map((q) => q.copyWithLocale(_currentLocale)).toList();
     }
-    
-    final String response = await rootBundle.loadString(filename);
-    final data = await json.decode(response) as List;
-    _quotes = data.map((json) => Quote.fromJson(json)).toList();
   }
 
   Quote getQuoteForDay(int dayIndex) {
-    if (_quotes.isEmpty) {
+    if (_allQuotes.isEmpty) {
       return Quote(text: "Loading...", author: "");
     }
     // Loop back to the beginning if we run out of quotes
-    return _quotes[dayIndex % _quotes.length];
+    return _allQuotes[dayIndex % _allQuotes.length];
   }
 
   int calculateDayIndex(DateTime startDate, DateTime currentDate) {

@@ -87,7 +87,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     // Load favorites
     final favListString = prefs.getStringList('favorites');
     if (favListString != null) {
-      _favorites = favListString.map((str) => Quote.fromJson(jsonDecode(str))).toList();
+      _favorites = favListString
+          .map((str) => Quote.fromJson(jsonDecode(str) as Map<String, dynamic>, _locale))
+          .toList();
     }
     
     await _notificationService.init(
@@ -317,6 +319,11 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await prefs.setString('locale', languageCode);
     await _quoteService.loadQuotes(_locale);
     _updateCurrentQuote();
+    _favorites = _favorites.map((fav) => fav.copyWithLocale(_locale)).toList();
+    await prefs.setStringList(
+      'favorites',
+      _favorites.map((q) => jsonEncode(q.toJson())).toList(),
+    );
     _rescheduleNotificationIfEnabled();
     notifyListeners();
   }
@@ -378,12 +385,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   bool isFavorite(Quote quote) {
-    return _favorites.any((q) => q.text == quote.text);
+    return _favorites.any((q) => (quote.day != null && q.day == quote.day) || q.text == quote.text);
   }
 
   Future<void> toggleFavorite(Quote quote) async {
     if (isFavorite(quote)) {
-      _favorites.removeWhere((q) => q.text == quote.text);
+      _favorites.removeWhere((q) => (quote.day != null && q.day == quote.day) || q.text == quote.text);
     } else {
       _favorites.add(quote);
     }

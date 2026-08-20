@@ -14,7 +14,6 @@ class AboutScreen extends StatelessWidget {
     final data = LegalContent.getAboutOne(locale);
 
     final title = data['title'] as String? ?? 'About ONE';
-    final subtitle = data['subtitle'] as String? ?? '';
     final p1 = data['p1'] as String? ?? '';
     final p2 = data['p2'] as String? ?? '';
     final footer = data['footer'] as String? ?? '';
