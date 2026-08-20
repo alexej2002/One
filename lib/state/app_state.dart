@@ -241,45 +241,32 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _updateCurrentQuote() {
-    if (_startDate != null) {
-      int dayIndex = _quoteService.calculateDayIndex(_startDate!, DateTime.now());
-      _currentQuote = _quoteService.getQuoteForDay(dayIndex);
-      
-      if (_currentQuote != null) {
-        final now = DateTime.now();
-        final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
-        HomeWidget.saveWidgetData<String>('quote_text', _currentQuote!.text);
-        HomeWidget.saveWidgetData<String>('quote_author', '— ${_currentQuote!.author}');
-        HomeWidget.saveWidgetData<String>('quote_date', '$dateStr · ONE');
-        HomeWidget.updateWidget(name: 'QuoteWidgetProvider');
-        _rescheduleNotificationIfEnabled();
-      }
+    _currentQuote = _quoteService.getQuoteForDate(DateTime.now());
+    
+    if (_currentQuote != null) {
+      final now = DateTime.now();
+      final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
+      HomeWidget.saveWidgetData<String>('quote_text', _currentQuote!.text);
+      HomeWidget.saveWidgetData<String>('quote_author', '— ${_currentQuote!.author}');
+      HomeWidget.saveWidgetData<String>('quote_date', '$dateStr · ONE');
+      HomeWidget.updateWidget(name: 'QuoteWidgetProvider');
+      _rescheduleNotificationIfEnabled();
     }
   }
 
   List<Map<String, dynamic>> getArchiveQuotes() {
-    if (_startDate == null) return [];
-    int currentDayIndex = _quoteService.calculateDayIndex(_startDate!, DateTime.now());
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     List<Map<String, dynamic>> archive = [];
     
-    // For demo purposes, if it's the first day, let's pretend there are a few past days
-    // so the archive isn't empty on first install during testing.
-    int startIndex = 0;
-    DateTime start = _startDate!;
-    if (currentDayIndex == 0) {
-      startIndex = -3; // show 3 days of fake history for demonstration
-      start = _startDate!.subtract(const Duration(days: 3));
-    }
-
-    for (int i = startIndex; i < currentDayIndex; i++) {
-      int idx = i;
-      if (idx < 0) idx = 30 + idx; // wrap around for fake history
-      DateTime d = start.add(Duration(days: i - startIndex));
-      Quote q = _quoteService.getQuoteForDay(idx);
-      archive.add({'date': d, 'quote': q});
+    // Provide past calendar days of quotes
+    for (int i = 1; i <= 365; i++) {
+      final pastDate = today.subtract(Duration(days: i));
+      final q = _quoteService.getQuoteForDate(pastDate);
+      archive.add({'date': pastDate, 'quote': q});
     }
     
-    return archive.reversed.toList();
+    return archive;
   }
 
   Future<void> completeOnboarding() async {

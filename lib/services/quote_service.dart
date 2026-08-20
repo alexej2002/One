@@ -20,6 +20,21 @@ class QuoteService {
     }
   }
 
+  int getDayOfYear(DateTime date) {
+    // 0-indexed day of the year (0 to 364)
+    final startOfYear = DateTime(date.year, 1, 1);
+    final diff = date.difference(startOfYear).inDays;
+    return diff < 0 ? 0 : (diff % 365);
+  }
+
+  Quote getQuoteForDate(DateTime date) {
+    if (_allQuotes.isEmpty) {
+      return Quote(text: "Loading...", author: "");
+    }
+    final index = getDayOfYear(date);
+    return _allQuotes[index % _allQuotes.length];
+  }
+
   Quote getQuoteForDay(int dayIndex) {
     if (_allQuotes.isEmpty) {
       return Quote(text: "Loading...", author: "");
