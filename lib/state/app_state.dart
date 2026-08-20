@@ -16,7 +16,7 @@ import '../main.dart';
 const String appleApiKey = 'appl_YOUR_API_KEY_HERE';
 const String googleApiKey = 'goog_mfTQvMcXrWDnuHOKDcFadyhiXot';
 
-class AppState extends ChangeNotifier {
+class AppState extends ChangeNotifier with WidgetsBindingObserver {
   static const List<String> supportedLocales = ['en', 'ru', 'de', 'es', 'fr', 'pt_BR', 'pt'];
 
   final QuoteService _quoteService = QuoteService();
@@ -101,8 +101,33 @@ class AppState extends ChangeNotifier {
     // Initialize RevenueCat
     await _initRevenueCat();
 
+    // Register lifecycle observer to automatically refresh quotes upon app resume / midnight passing
+    WidgetsBinding.instance.addObserver(this);
+
     _isInitialized = true;
     notifyListeners();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkDayChange();
+    }
+  }
+
+  void _checkDayChange() {
+    final oldText = _currentQuote?.text;
+    _updateCurrentQuote();
+    if (oldText != _currentQuote?.text) {
+      debugPrint("Day transition detected on resume: updated quote to today");
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> _initRevenueCat() async {

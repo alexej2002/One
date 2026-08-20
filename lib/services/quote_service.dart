@@ -27,9 +27,10 @@ class QuoteService {
   }
 
   int calculateDayIndex(DateTime startDate, DateTime currentDate) {
-    // Calculate how many days have passed since the start date
-    final start = DateTime(startDate.year, startDate.month, startDate.day);
-    final current = DateTime(currentDate.year, currentDate.month, currentDate.day);
-    return current.difference(start).inDays;
+    // Normalizing to UTC midnight ensures no DST / daylight shift artifacts
+    final startUtc = DateTime.utc(startDate.year, startDate.month, startDate.day);
+    final currentUtc = DateTime.utc(currentDate.year, currentDate.month, currentDate.day);
+    final diff = currentUtc.difference(startUtc).inDays;
+    return diff < 0 ? 0 : diff;
   }
 }
