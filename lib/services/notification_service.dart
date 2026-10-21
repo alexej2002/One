@@ -104,8 +104,6 @@ class NotificationService {
     String? subText,
     String? title,
   }) async {
-    await cancelAll();
-
     // Ensure local timezone is accurately aligned with current device offset
     _configureLocalTimezone();
 
@@ -152,13 +150,20 @@ class NotificationService {
     final NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
+    final androidImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    final canScheduleExactly =
+        await androidImplementation?.canScheduleExactNotifications() ?? true;
+
     await _notificationsPlugin.zonedSchedule(
       0,
       title,
       body,
       scheduledDate,
       platformChannelSpecifics,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: canScheduleExactly
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,

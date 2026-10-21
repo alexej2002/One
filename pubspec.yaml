@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.5
   provider: ^6.1.5+1
-  purchases_flutter: ^10.9.0
   google_fonts: ^8.2.1
   intl: ^0.20.3
   flutter_local_notifications: ^17.1.2

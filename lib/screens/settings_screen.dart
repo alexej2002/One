@@ -39,8 +39,9 @@ class SettingsScreen extends StatelessWidget {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-      systemNavigationBarColor: ext.bg2,
+      systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -59,9 +60,11 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        children: [
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          children: [
           _buildLabel(Strings.get(locale, 'section_daily'), ext),
           _buildCard(ext, [
             _buildRow(ext, Icons.access_time, Strings.get(locale, 'reminder_time'), Strings.get(locale, 'reminder_time_sub'), value: timeStr, onTap: () {
@@ -174,7 +177,8 @@ class SettingsScreen extends StatelessWidget {
           ]),
           
           const SizedBox(height: 80),
-        ],
+          ],
+        ),
       ),
     ),
   );
@@ -284,16 +288,11 @@ class SettingsScreen extends StatelessWidget {
       if (id == 'paper' || state.isPremium) {
         state.setTheme(id);
       } else {
-        final themeName = id == 'sepia'
-            ? Strings.get(locale, 'theme_sepia')
-            : id == 'dark'
-                ? Strings.get(locale, 'theme_dark')
-                : Strings.get(locale, 'theme_aurora');
         state.setPendingPremiumAction(() => state.setTheme(id));
         ContextualPaywallSheet.show(
           context,
-          title: '$themeName is part of ONE+',
-          description: 'Typography and backgrounds change the mood while the product stays quiet.',
+          title: Strings.get(locale, 'premium_title'),
+          description: Strings.get(locale, 'premium_offer_text'),
           unlockLabel: 'Unlock ONE+',
           cancelLabel: 'Keep Paper',
         );

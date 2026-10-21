@@ -22,8 +22,8 @@ class LegalContent {
               'body': 'ONE не продает и не передает данные пользователей. Мы намеренно не делимся историей ваших мыслей, избранным или предпочтениями с третьими сторонами.'
             },
             {
-              'title': '4. Google Play и платежи',
-              'body': 'Покупки подписки ONE+ обрабатываются напрямую через Google Play. ONE не получает и не сохраняет данные ваших банковских карт. Обработка платежей регулируется политикой конфиденциальности Google.'
+              'title': '4. Бесплатная активация Premium',
+              'body': 'ONE Premium активируется бесплатно внутри приложения. Платёжные данные, списания и автопродление не используются.'
             },
             {
               'title': '5. Уведомления',
@@ -56,8 +56,8 @@ class LegalContent {
               'body': 'ONE verkauft oder teilt keine Nutzerdaten mit Dritten.'
             },
             {
-              'title': '4. Google Play & Käufe',
-              'body': 'Zahlungen für ONE+ werden sicher über Google Play abgewickelt. ONE speichert keine Zahlungskartendaten.'
+              'title': '4. Kostenlose Premium-Aktivierung',
+              'body': 'ONE Premium wird kostenlos in der App aktiviert. Es werden keine Zahlungsdaten, Abbuchungen oder automatische Verlängerungen verwendet.'
             },
             {
               'title': '5. Kontakt',
@@ -86,8 +86,8 @@ class LegalContent {
               'body': 'ONE no vende ni comparte datos de usuarios con terceros.'
             },
             {
-              'title': '4. Compras y Google Play',
-              'body': 'Las compras de ONE+ se procesan a través de Google Play. ONE no almacena los datos de su tarjeta de pago.'
+              'title': '4. Activación gratuita de Premium',
+              'body': 'ONE Premium se activa gratis dentro de la aplicación. No se utilizan datos de pago, cargos ni renovación automática.'
             },
             {
               'title': '5. Contacto',
@@ -116,8 +116,8 @@ class LegalContent {
               'body': 'ONE ne vend et ne partage aucune donnée utilisateur avec des tiers.'
             },
             {
-              'title': '4. Achats Google Play',
-              'body': 'Les achats ONE+ sont gérés par Google Play. ONE ne conserve aucune information bancaire.'
+              'title': '4. Activation gratuite de Premium',
+              'body': 'ONE Premium est activé gratuitement dans l’application. Aucune donnée de paiement, aucun prélèvement ni renouvellement automatique n’est utilisé.'
             },
             {
               'title': '5. Contact',
@@ -147,8 +147,8 @@ class LegalContent {
               'body': 'O ONE não vende nem compartilha dados de usuários com terceiros.'
             },
             {
-              'title': '4. Compras no Google Play',
-              'body': 'As assinaturas ONE+ são processadas pelo Google Play. O ONE não armazena dados de pagamento.'
+              'title': '4. Ativação gratuita do Premium',
+              'body': 'O ONE Premium é ativado gratuitamente na aplicação. Não são usados dados de pagamento, cobranças ou renovação automática.'
             },
             {
               'title': '5. Contato',
@@ -178,8 +178,8 @@ class LegalContent {
               'body': 'One does not sell personal or sensitive user data. One does not intentionally share locally stored quote activity, favorites, archive information, or app preferences with third parties.'
             },
             {
-              'title': '4. Google Play and purchases',
-              'body': 'ONE+ purchases and subscriptions are offered through Google Play. One does not receive or store your full payment-card details. Information processed directly by Google is governed by Google\'s own privacy policies.'
+              'title': '4. Free Premium activation',
+              'body': 'ONE Premium is activated for free inside the app. No payment details, charges, or automatic renewal are used.'
             },
             {
               'title': '5. Notifications',
@@ -202,23 +202,23 @@ class LegalContent {
           'effective_date': 'Дата вступления в силу: 20 августа 2026 г.',
           'intro': 'Настоящие Условия использования («Условия») регулируют использование мобильного приложения One («One», «мы», «наш»). Загружая или используя One, вы соглашаетесь с настоящими Условиями.',
           'summary_title': 'О приложении ONE:',
-          'summary_body': 'ONE — это приложение для ежедневного вдохновения, созданное для спокойного чтения одной мысли в день. Приложение можно использовать бесплатно или оформить дополнительную подписку ONE+.',
+          'summary_body': 'ONE — это приложение для ежедневного вдохновения, созданное для спокойного чтения одной мысли в день. Premium активируется бесплатно внутри приложения.',
           'sections': [
             {
               'title': '1. Бесплатная версия',
-              'body': 'ONE предоставляет бесплатный режим использования. Для доступа к базовым ежедневным мыслям покупка подписки не требуется.'
+              'body': 'ONE предоставляет бесплатный режим использования. Premium активируется бесплатно внутри приложения.'
             },
             {
               'title': '2. Возможности ONE+',
-              'body': 'Подписка ONE+ открывает расширенные функции:\n• выбор любого времени напоминания;\n• все визуальные темы оформления (Сепия, Полночь, Аврора);\n• полный доступ к архиву прошедших дней;\n• виджеты для домашнего экрана.'
+              'body': 'Бесплатная активация Premium открывает расширенные функции:\n• выбор любого времени напоминания;\n• все визуальные темы оформления (Сепия, Полночь, Аврора);\n• полный доступ к архиву прошедших дней;\n• виджеты для домашнего экрана.'
             },
             {
-              'title': '3. Варианты подписки и покупки',
-              'body': 'ONE+ предлагается через Google Play в вариантах:\n• Месячная подписка (автопродление);\n• Годовая подписка (автопродление);\n• Пожизненный доступ (единоразовая покупка без списаний).'
+              'title': '3. Бесплатная активация',
+              'body': 'Активация Premium выполняется бесплатно внутри приложения. Платёжные данные, списания и автопродление не используются.'
             },
             {
-              'title': '4. Управление и отмена подписки',
-              'body': 'Вы можете управлять подпиской или отменить ее в любое время через настройки учетной записи Google Play. Удаление приложения не отменяет действующую подписку.'
+              'title': '4. Локальное хранение',
+              'body': 'Статус Premium сохраняется локально на устройстве. При очистке данных или переустановке автоматическое восстановление не гарантируется.'
             },
             {
               'title': '5. Ограничение ответственности',
@@ -247,12 +247,12 @@ class LegalContent {
               'body': 'ONE+ bietet individuelle Erinnerungszeiten, alle visuellen Themes, vollen Archivzugriff und Widgets.'
             },
             {
-              'title': '3. Abonnements & Kauf',
-              'body': 'Monats-, Jahres-Abo oder lebenslanger Einmalkauf über Google Play.'
+              'title': '3. Kostenlose Aktivierung',
+              'body': 'Premium wird kostenlos in der App aktiviert. Es gibt keine Zahlungsdaten, Abbuchungen oder automatische Verlängerung.'
             },
             {
-              'title': '4. Kündigung',
-              'body': 'Abonnements können jederzeit über Ihr Google Play-Konto verwaltet oder gekündigt werden.'
+              'title': '4. Lokale Speicherung',
+              'body': 'Der Premium-Status wird lokal auf dem Gerät gespeichert. Nach dem Löschen der App-Daten oder einer Neuinstallation ist eine automatische Wiederherstellung nicht garantiert.'
             },
             {
               'title': '5. Kontakt',
@@ -277,12 +277,12 @@ class LegalContent {
               'body': 'ONE+ incluye hora de recordatorio personalizada, todos los temas visuales, archivo completo y widgets.'
             },
             {
-              'title': '3. Opciones de compra',
-              'body': 'Suscripción mensual, anual o compra única de por vida a través de Google Play.'
+              'title': '3. Activación gratuita',
+              'body': 'Premium se activa gratis dentro de la aplicación. No se utilizan datos de pago, cargos ni renovación automática.'
             },
             {
-              'title': '4. Gestión y cancelación',
-              'body': 'Puede gestionar o cancelar su suscripción en cualquier momento desde Google Play.'
+              'title': '4. Almacenamiento local',
+              'body': 'El estado Premium se guarda localmente en el dispositivo. No se garantiza la restauración automática tras borrar los datos o reinstalar la aplicación.'
             },
             {
               'title': '5. Contacto',
@@ -307,12 +307,12 @@ class LegalContent {
               'body': 'ONE+ débloque l\'horaire personnalisé, tous les thèmes visuels, les archives complètes et les widgets.'
             },
             {
-              'title': '3. Options d\'achat',
-              'body': 'Abonnement mensuel, annuel ou achat unique à vie via Google Play.'
+              'title': '3. Activation gratuite',
+              'body': 'Premium est activé gratuitement dans l’application. Aucune donnée de paiement, aucun prélèvement ni renouvellement automatique n’est utilisé.'
             },
             {
-              'title': '4. Résiliation',
-              'body': 'Gérez et annulez vos abonnements directement dans Google Play.'
+              'title': '4. Stockage local',
+              'body': 'Le statut Premium est enregistré localement sur l’appareil. Sa restauration automatique après suppression des données ou réinstallation n’est pas garantie.'
             },
             {
               'title': '5. Contact',
@@ -338,12 +338,12 @@ class LegalContent {
               'body': 'O ONE+ inclui horário personalizado de lembretes, todos os temas visuais, arquivo completo e widgets.'
             },
             {
-              'title': '3. Opções de compra',
-              'body': 'Assinatura mensal, anual ou compra vitalícia única via Google Play.'
+              'title': '3. Ativação gratuita',
+              'body': 'O Premium é ativado gratuitamente na aplicação. Não são usados dados de pagamento, cobranças ou renovação automática.'
             },
             {
-              'title': '4. Cancelamento',
-              'body': 'Gerencie ou cancele sua assinatura a qualquer momento no Google Play.'
+              'title': '4. Armazenamento local',
+              'body': 'O estado Premium é guardado localmente no dispositivo. A restauração automática após limpar dados ou reinstalar a aplicação não é garantida.'
             },
             {
               'title': '5. Contato',
@@ -358,23 +358,23 @@ class LegalContent {
           'effective_date': 'Effective date: August 20, 2026',
           'intro': 'These Terms of Use ("Terms") govern your use of the One mobile application ("One", "we", "us", or "our").',
           'summary_title': 'About One:',
-          'summary_body': 'One is a daily-quote application designed to provide one simple, calm reading experience each day. One may be used in a free version and may also offer optional paid ONE+ features.',
+          'summary_body': 'One is a daily-quote application designed to provide one simple, calm reading experience each day. Premium is activated for free inside the app.',
           'sections': [
             {
               'title': '1. Free version',
-              'body': 'One offers a free mode of use. A paid ONE+ purchase is not required to access basic daily functionality.'
+              'body': 'One offers a free mode of use. Premium is activated for free inside the app.'
             },
             {
               'title': '2. ONE+ features',
-              'body': 'ONE+ unlocks custom reminder times, all visual themes, complete archive history, and home screen widgets.'
+              'body': 'Free Premium activation unlocks custom reminder times, all visual themes, complete archive history, and home screen widgets.'
             },
             {
-              'title': '3. ONE+ purchase options',
-              'body': 'ONE+ is offered through Google Play as Monthly or Yearly auto-renewing subscriptions, or as a one-time Lifetime purchase.'
+              'title': '3. Free activation',
+              'body': 'Premium is activated for free inside the app. No payment details, charges, or automatic renewal are used.'
             },
             {
-              'title': '4. Managing or cancelling a subscription',
-              'body': 'You can manage or cancel an active ONE+ subscription through your Google Play account at any time.'
+              'title': '4. Local storage',
+              'body': 'Premium status is stored locally on the device. Automatic restoration after clearing app data or reinstalling is not guaranteed.'
             },
             {
               'title': '5. Contact',

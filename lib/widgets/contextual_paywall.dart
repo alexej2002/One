@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../theme.dart';
 import '../screens/premium_screen.dart';
+import '../state/app_state.dart';
+import '../l10n/strings.dart';
 
 class ContextualPaywallSheet extends StatelessWidget {
   final String title;
@@ -48,6 +51,14 @@ class ContextualPaywallSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ext = Theme.of(context).extension<OneThemeExtension>()!;
+    final state = context.read<AppState>();
+    final locale = state.locale;
+    final localizedUnlockLabel = unlockLabel == 'Unlock ONE+'
+        ? Strings.get(locale, 'activate_free')
+        : unlockLabel;
+    final localizedCancelLabel = cancelLabel == 'Not now'
+        ? Strings.get(locale, 'not_now')
+        : cancelLabel;
 
     return Container(
       decoration: BoxDecoration(
@@ -140,6 +151,7 @@ class ContextualPaywallSheet extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => const PremiumScreen()),
               );
+              if (!state.isPremium) state.clearPendingPremiumAction();
               onUnlocked?.call();
             },
             style: ElevatedButton.styleFrom(
@@ -151,7 +163,7 @@ class ContextualPaywallSheet extends StatelessWidget {
               ),
             ),
             child: Text(
-              unlockLabel,
+              localizedUnlockLabel,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ),
@@ -160,12 +172,15 @@ class ContextualPaywallSheet extends StatelessWidget {
 
           // Cancel / dismiss button
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              state.clearPendingPremiumAction();
+              Navigator.pop(context);
+            },
             style: TextButton.styleFrom(
               minimumSize: const Size(double.infinity, 44),
             ),
             child: Text(
-              cancelLabel,
+              localizedCancelLabel,
               style: TextStyle(
                 fontSize: 14,
                 color: ext.muted,

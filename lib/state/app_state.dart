@@ -1,9 +1,6 @@
-import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:home_widget/home_widget.dart';
 import '../services/quote_service.dart';
 import '../services/notification_service.dart';
@@ -11,10 +8,6 @@ import '../models/quote.dart';
 import '../l10n/strings.dart';
 import 'package:intl/intl.dart';
 import '../main.dart';
-
-// TODO: Replace with your actual RevenueCat API keys
-const String appleApiKey = 'appl_YOUR_API_KEY_HERE';
-const String googleApiKey = 'goog_mfTQvMcXrWDnuHOKDcFadyhiXot';
 
 class AppState extends ChangeNotifier with WidgetsBindingObserver {
   static const List<String> supportedLocales = ['en', 'ru', 'de', 'es', 'fr', 'pt_BR', 'pt'];
@@ -24,7 +17,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   
   bool _isInitialized = false;
   bool _isOnboardingComplete = false;
-  bool _isPremium = const bool.fromEnvironment('FORCE_PREMIUM', defaultValue: false);
+  bool _isPremium = false;
+  bool _isActivatingPremium = false;
+  String? _premiumStorageError;
   DateTime? _startDate;
   Quote? _currentQuote;
   
@@ -36,48 +31,63 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool _notificationsEnabled = false;
   TimeOfDay _notificationTime = const TimeOfDay(hour: 9, minute: 0);
   
-  Offerings? _offerings;
-  
   List<Quote> _favorites = [];
 
   bool get isInitialized => _isInitialized;
   bool get isOnboardingComplete => _isOnboardingComplete;
   bool get isPremium => _isPremium;
+  bool get isActivatingPremium => _isActivatingPremium;
+  String? get premiumStorageError => _premiumStorageError;
   Quote? get currentQuote => _currentQuote;
   String get themeName => _themeName;
   String get textSize => _textSize;
   String get locale => _locale;
   int get currentTabIndex => _currentTabIndex;
-  Offerings? get offerings => _offerings;
   
   bool get notificationsEnabled => _notificationsEnabled;
   TimeOfDay get notificationTime => _notificationTime;
   List<Quote> get favorites => _favorites;
 
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences? prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (e) {
+      _premiumStorageError = 'premium_read_failed';
+      debugPrint('Local preferences could not be opened: $e');
+    }
+
+    // Premium is a local launch offer. Missing data means Free; a read error
+    // must never overwrite a previously saved value.
+    try {
+      _isPremium = prefs?.getString('premium_access_level') == 'premium';
+      if (prefs != null) _premiumStorageError = null;
+    } catch (e) {
+      _premiumStorageError = 'premium_read_failed';
+      debugPrint('Premium status could not be read: $e');
+    }
     
     // Load onboarding status
-    _isOnboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+    _isOnboardingComplete = prefs?.getBool('onboarding_complete') ?? false;
     
     // Load theme, text size and locale
-    _themeName = prefs.getString('theme_name') ?? 'paper';
-    _textSize = prefs.getString('text_size') ?? 'medium';
-    _locale = prefs.getString('locale') ?? _detectDeviceLocale();
+    _themeName = prefs?.getString('theme_name') ?? 'paper';
+    _textSize = prefs?.getString('text_size') ?? 'medium';
+    _locale = prefs?.getString('locale') ?? _detectDeviceLocale();
     
     // Load notifications state
-    _notificationsEnabled = prefs.getBool('notifications_enabled') ?? false;
-    final hour = prefs.getInt('notification_hour') ?? 9;
-    final minute = prefs.getInt('notification_minute') ?? 0;
+    _notificationsEnabled = prefs?.getBool('notifications_enabled') ?? false;
+    final hour = prefs?.getInt('notification_hour') ?? 9;
+    final minute = prefs?.getInt('notification_minute') ?? 0;
     _notificationTime = TimeOfDay(hour: hour, minute: minute);
     
     // Load or set start date
-    final startDateStr = prefs.getString('start_date');
+    final startDateStr = prefs?.getString('start_date');
     if (startDateStr != null) {
       _startDate = DateTime.parse(startDateStr);
     } else {
       _startDate = DateTime.now();
-      await prefs.setString('start_date', _startDate!.toIso8601String());
+      await prefs?.setString('start_date', _startDate!.toIso8601String());
     }
 
     // Load quotes
@@ -85,7 +95,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _updateCurrentQuote();
     
     // Load favorites
-    final favListString = prefs.getStringList('favorites');
+    final favListString = prefs?.getStringList('favorites');
     if (favListString != null) {
       _favorites = favListString
           .map((str) => Quote.fromJson(jsonDecode(str) as Map<String, dynamic>, _locale))
@@ -99,10 +109,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         notifyListeners();
       },
     );
+    try {
+      await _rescheduleNotificationIfEnabled();
+    } catch (e) {
+      debugPrint('Daily reminder could not be scheduled on startup: $e');
+    }
     
-    // Initialize RevenueCat
-    await _initRevenueCat();
-
     // Register lifecycle observer to automatically refresh quotes upon app resume / midnight passing
     WidgetsBinding.instance.addObserver(this);
 
@@ -122,6 +134,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _updateCurrentQuote();
     if (oldText != _currentQuote?.text) {
       debugPrint("Day transition detected on resume: updated quote to today");
+      _rescheduleNotificationIfEnabled();
       notifyListeners();
     }
   }
@@ -132,38 +145,6 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Future<void> _initRevenueCat() async {
-    if (kIsWeb) return; // RevenueCat does not support Web out-of-the-box
-
-    await Purchases.setLogLevel(LogLevel.debug);
-
-    PurchasesConfiguration? configuration;
-    if (Platform.isAndroid) {
-      configuration = PurchasesConfiguration(googleApiKey);
-    } else if (Platform.isIOS) {
-      configuration = PurchasesConfiguration(appleApiKey);
-    }
-
-    if (configuration != null) {
-      await Purchases.configure(configuration);
-      
-      // Listen for subscription changes
-      Purchases.addCustomerInfoUpdateListener((customerInfo) {
-        _checkPremiumStatus(customerInfo);
-      });
-
-      // Fetch initial status and offerings
-      try {
-        final customerInfo = await Purchases.getCustomerInfo();
-        _checkPremiumStatus(customerInfo);
-        
-        _offerings = await Purchases.getOfferings();
-      } catch (e) {
-        debugPrint("Error fetching RevenueCat data: $e");
-      }
-    }
-  }
-
   VoidCallback? _pendingPremiumAction;
 
   void setPendingPremiumAction(VoidCallback? action) {
@@ -171,6 +152,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void applyPendingPremiumAction() {
+    if (!_isPremium) return;
     if (_pendingPremiumAction != null) {
       final action = _pendingPremiumAction;
       _pendingPremiumAction = null;
@@ -182,51 +164,43 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _pendingPremiumAction = null;
   }
 
-  void _checkPremiumStatus(CustomerInfo customerInfo) {
-    // If built with FORCE_PREMIUM, keep premium enabled
-    if (const bool.fromEnvironment('FORCE_PREMIUM', defaultValue: false)) {
-      _isPremium = true;
-      notifyListeners();
-      return;
-    }
-
-    // Entitlement name must match what you set in RevenueCat dashboard (e.g., 'premium')
-    const entitlementIdentifier = 'premium';
-    final isPro = customerInfo.entitlements.all[entitlementIdentifier]?.isActive ?? false;
-    
-    if (_isPremium != isPro) {
-      _isPremium = isPro;
-      if (_isPremium) {
-        applyPendingPremiumAction();
-      }
-      notifyListeners();
-    }
-  }
-
-  Future<bool> purchasePackage(Package package) async {
-    try {
-      final purchaseResult = await Purchases.purchasePackage(package);
-      _checkPremiumStatus(purchaseResult.customerInfo);
+  Future<bool> activateFreePremium() async {
+    if (_isPremium) {
       applyPendingPremiumAction();
+      notifyListeners();
+      return true;
+    }
+    if (_isActivatingPremium) return false;
+
+    _isActivatingPremium = true;
+    _premiumStorageError = null;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final activatedAt = prefs.getString('premium_activated_at');
+      await prefs.setString('premium_access_level', 'premium');
+      await prefs.setString('premium_grant_source', 'launch_offer');
+      if (activatedAt == null) {
+        await prefs.setString('premium_activated_at', DateTime.now().toUtc().toIso8601String());
+      }
+      await prefs.setInt('premium_schema_version', 1);
+      _isPremium = true;
+      applyPendingPremiumAction();
+      await _updateWidgetPremiumStatus();
       return true;
     } catch (e) {
-      debugPrint("Purchase failed: $e");
+      _premiumStorageError = 'premium_write_failed';
+      debugPrint('Premium activation could not be saved: $e');
       return false;
+    } finally {
+      _isActivatingPremium = false;
+      notifyListeners();
     }
   }
 
-  Future<bool> restorePurchases() async {
-    try {
-      final customerInfo = await Purchases.restorePurchases();
-      _checkPremiumStatus(customerInfo);
-      if (_isPremium) {
-        applyPendingPremiumAction();
-      }
-      return _isPremium;
-    } catch (e) {
-      debugPrint("Restore failed: $e");
-      return false;
-    }
+  Future<void> _updateWidgetPremiumStatus() async {
+    await HomeWidget.saveWidgetData<bool>('premium_active', _isPremium);
+    await HomeWidget.updateWidget(name: 'QuoteWidgetProvider');
   }
 
   String _detectDeviceLocale() {
@@ -244,13 +218,13 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     _currentQuote = _quoteService.getQuoteForDate(DateTime.now());
     
     if (_currentQuote != null) {
+      HomeWidget.saveWidgetData<bool>('premium_active', _isPremium);
       final now = DateTime.now();
       final dateStr = DateFormat.MMMd(_locale).format(now).toUpperCase();
       HomeWidget.saveWidgetData<String>('quote_text', _currentQuote!.text);
       HomeWidget.saveWidgetData<String>('quote_author', '— ${_currentQuote!.author}');
       HomeWidget.saveWidgetData<String>('quote_date', '$dateStr · ONE');
       HomeWidget.updateWidget(name: 'QuoteWidgetProvider');
-      _rescheduleNotificationIfEnabled();
     }
   }
 
@@ -277,8 +251,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void setPremium(bool status) {
-    _isPremium = status;
-    notifyListeners();
+    if (status) {
+      activateFreePremium();
+    }
   }
   
   Future<void> setTheme(String themeName) async {
@@ -311,7 +286,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       'favorites',
       _favorites.map((q) => jsonEncode(q.toJson())).toList(),
     );
-    _rescheduleNotificationIfEnabled();
+    await _rescheduleNotificationIfEnabled();
     notifyListeners();
   }
   
@@ -326,7 +301,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     await prefs.setBool('notifications_enabled', _notificationsEnabled);
     
     if (_notificationsEnabled) {
-      _rescheduleNotificationIfEnabled();
+      await _rescheduleNotificationIfEnabled();
     } else {
       await _notificationService.cancelAll();
     }
@@ -367,6 +342,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         time: _notificationTime,
         body: body,
         subText: dateStr,
+        title: Strings.get(_locale, 'notification_title'),
       );
     }
   }

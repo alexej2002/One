@@ -152,8 +152,9 @@ class AppTheme {
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
           statusBarBrightness: brightness == Brightness.dark ? Brightness.dark : Brightness.light,
-          systemNavigationBarColor: bg2,
+          systemNavigationBarColor: Colors.transparent,
           systemNavigationBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          systemNavigationBarContrastEnforced: false,
         ),
         titleTextStyle: GoogleFonts.inter(
           color: ink, 

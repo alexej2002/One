@@ -62,6 +62,7 @@ class TodayScreen extends StatelessWidget {
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(

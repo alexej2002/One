@@ -16,10 +16,17 @@ class QuoteWidgetProvider : HomeWidgetProvider() {
                 val quoteText = widgetData.getString("quote_text", "One thought. Every day.")
                 val quoteAuthor = widgetData.getString("quote_author", "— ONE")
                 val quoteDate = widgetData.getString("quote_date", "ONE")
+                val premiumActive = widgetData.getBoolean("premium_active", false)
 
-                setTextViewText(R.id.quote_text, quoteText)
-                setTextViewText(R.id.quote_author, quoteAuthor)
-                setTextViewText(R.id.quote_date, quoteDate)
+                if (premiumActive) {
+                    setTextViewText(R.id.quote_text, quoteText)
+                    setTextViewText(R.id.quote_author, quoteAuthor)
+                    setTextViewText(R.id.quote_date, quoteDate)
+                } else {
+                    setTextViewText(R.id.quote_text, "Activate One Premium in the app")
+                    setTextViewText(R.id.quote_author, "Premium widget")
+                    setTextViewText(R.id.quote_date, "ONE")
+                }
 
                 // Open app on click
                 val intent = Intent(context, MainActivity::class.java)

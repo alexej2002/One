@@ -72,8 +72,8 @@ class ThemesFeatureScreen extends StatelessWidget {
         // Soft contextual paywall
         ContextualPaywallSheet.show(
           context,
-          title: '$themeName is part of ONE+',
-          description: 'Typography and backgrounds change the mood while the product stays quiet.',
+          title: Strings.get(locale, 'premium_title'),
+          description: Strings.get(locale, 'premium_offer_text'),
           unlockLabel: 'Unlock ONE+',
           cancelLabel: 'Keep Paper',
         );
@@ -420,8 +420,8 @@ class ArchiveFeatureScreen extends StatelessWidget {
                 onTap: () {
                   ContextualPaywallSheet.show(
                     context,
-                    title: 'Keep your full history',
-                    description: 'ONE+ keeps every thought you’ve received since the day you started.',
+                    title: Strings.get(locale, 'premium_title'),
+                    description: Strings.get(locale, 'premium_offer_text'),
                     unlockLabel: 'Unlock ONE+',
                     cancelLabel: 'Not now',
                   );
@@ -451,17 +451,18 @@ class WidgetsFeatureScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final ext = Theme.of(context).extension<OneThemeExtension>()!;
+    final locale = state.locale;
 
     void onAddWidget(String widgetName) {
       if (state.isPremium) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Widget "$widgetName" added to home screen!')),
+          SnackBar(content: Text(Strings.get(locale, 'widget_add_instruction'))),
         );
       } else {
         ContextualPaywallSheet.show(
           context,
-          title: 'Home Screen Widgets · ONE+',
-          description: 'Keep today’s thought on your home screen without opening the app.',
+          title: Strings.get(locale, 'premium_title'),
+          description: Strings.get(locale, 'premium_offer_text'),
           unlockLabel: 'Unlock ONE+',
           cancelLabel: 'Not now',
         );
@@ -491,7 +492,7 @@ class WidgetsFeatureScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Preview how ONE can live quietly on your home screen.',
+                Strings.get(locale, 'widget_add_instruction'),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: ext.muted, height: 1.6),
               ),
@@ -501,40 +502,14 @@ class WidgetsFeatureScreen extends StatelessWidget {
 
           _buildWidgetPreview(
             ext,
-            title: 'Small Paper',
-            sub: 'Quote + author',
+            title: Strings.get(locale, 'premium_feat_4_title'),
+            sub: Strings.get(locale, 'widget_add_instruction'),
             bgColor: const Color(0xFFEEE8DD),
             textColor: const Color(0xFF1D1C19),
             headerText: 'ONE · TODAY',
-            quoteText: 'The secret of getting ahead is getting started.',
-            authorText: 'Mark Twain',
-            onAdd: () => onAddWidget('Small Paper'),
-          ),
-          const SizedBox(height: 18),
-
-          _buildWidgetPreview(
-            ext,
-            title: 'Midnight',
-            sub: 'Minimal lock/home screen style',
-            bgColor: const Color(0xFF20201D),
-            textColor: const Color(0xFFF5EFE6),
-            headerText: 'ONE · AUG 19',
             quoteText: 'One thought.\nEvery day.',
             authorText: 'ONE',
-            onAdd: () => onAddWidget('Midnight'),
-          ),
-          const SizedBox(height: 18),
-
-          _buildWidgetPreview(
-            ext,
-            title: 'Gold',
-            sub: 'Premium accent',
-            bgColor: const Color(0xFFD5AB5B),
-            textColor: const Color(0xFF1C1812),
-            headerText: 'ONE',
-            quoteText: 'Today\'s thought is waiting.',
-            authorText: 'Tap to open',
-            onAdd: () => onAddWidget('Gold'),
+            onAdd: () => onAddWidget(Strings.get(locale, 'premium_feat_4_title')),
           ),
           const SizedBox(height: 24),
         ],

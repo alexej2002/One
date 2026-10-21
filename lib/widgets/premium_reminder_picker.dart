@@ -352,7 +352,7 @@ class _PremiumReminderTimePickerState extends State<PremiumReminderTimePicker> {
               // Show contextual paywall sheet
               ContextualPaywallSheet.show(
                 context,
-                title: 'ONE+',
+                title: Strings.get(locale, 'premium_title'),
                 description: Strings.get(locale, 'reminder_paywall_desc'),
                 choiceBadge: '${Strings.get(locale, 'your_choice')} $hourStr:$minuteStr',
                 unlockLabel: Strings.get(locale, 'unlock_one_plus'),

@@ -9,8 +9,8 @@ Write-Host "`n📱 Проверка подключенных устройств.
 $devices = flutter devices
 Write-Host $devices
 
-# 2. Собираем и устанавливаем с флагом --dart-define=FORCE_PREMIUM=true
+# 2. Собираем и устанавливаем обычную версию приложения
 Write-Host "`n📦 Запуск установки с разблокированными Premium-функциями..." -ForegroundColor Yellow
-flutter run --dart-define=FORCE_PREMIUM=true -d android
+flutter run -d android
 
-Write-Host "`n✅ Готово! Premium-версия запущена на устройстве." -ForegroundColor Green
+Write-Host "`n✅ Готово! Версия приложения запущена на устройстве." -ForegroundColor Green
